@@ -23,7 +23,7 @@ import datetime,xbmc,xbmcplugin,xbmcgui,xbmcaddon
 class main:
     def __init__(self):
         while (not xbmc.abortRequested):
-            if xbmcaddon.Addon().getSetting("subscriptions_update") == 'true':
+            if xbmcaddon.Addon().getSetting("subscriptions_update") == 'true' or xbmcaddon.Addon().getSetting("subscriptions_import") == 'true':
                 try:
                     t1 = datetime.datetime.strptime(xbmcaddon.Addon().getSetting("subscriptions_run"), "%Y-%m-%d %H:%M:%S.%f")
                     t2 = datetime.datetime.now()

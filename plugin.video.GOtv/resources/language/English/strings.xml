@@ -36,9 +36,10 @@
 	<string id="30081">Subscriptions will be imported to library if this folder is added to media sources.</string>
 	<string id="30082">Latest episodes are available in the addon even if you don't.</string>
 	<string id="30083">TV Folder</string>
-	<string id="30084">Automatic Updates for Subscriptions</string>
-	<string id="30085">Subscription Update Interval</string>
-	<string id="30086">Update Library after Subscription Updates</string>
+	<string id="30084">Automatic Import of Trakt collection</string>
+	<string id="30085">Automatic Updates for Subscriptions</string>
+	<string id="30086">Subscription Update Interval</string>
+	<string id="30087">Update Library after Subscription Updates</string>
 	<string id="30100">Accounts</string>
 	<string id="30101">User</string>
 	<string id="30102">Password</string>
@@ -83,15 +84,12 @@
 	<string id="30344">Do you want to download it again?</string>
 	<string id="30345">The download of this video is in progress.</string>
 	<string id="30346">Do you want to cancel it?</string>
-	<string id="30347">This TV Show seems to be ended.</string>
-	<string id="30348">Do you really want to add it?</string>
-	<string id="30349">This TV Show seems to be ended.</string>
-	<string id="30350">Do you really want to remove it?</string>
-	<string id="30351">This TV Show will remain to library.</string>
-	<string id="30352">Do you want to remove it from library?</string>
-	<string id="30353">Resume from</string>
-	<string id="30354">Resume</string>
-	<string id="30355">Start from beginning</string>
+	<string id="30347">Movie already in library.</string>
+	<string id="30348">TV show already in library.</string>
+	<string id="30349">Do you really want to add it?</string>
+	<string id="30350">Resume from</string>
+	<string id="30351">Resume</string>
+	<string id="30352">Start from beginning</string>
 	<!-- Misc -->
 	<string id="30361">Next Page</string>
 	<string id="30362">Search</string>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="30000">
-		<setting id="autoplay" type="bool" label="30001" default="false"/>
-		<setting id="autoplay_library" type="bool" label="30002" default="false"/>
+		<setting id="autoplay" type="bool" label="30001" default="true"/>
+		<setting id="autoplay_library" type="bool" label="30002" default="true"/>
 		<setting id="resume_playback" type="bool" label="30012" default="true"/>
 		<setting id="playback_info" type="bool" label="30011" default="false"/>
 		<setting id="quality" type="bool" label="30003" default="true"/>
@@ -64,9 +64,12 @@
 		<setting type="lsep" label="30081"/>
 		<setting type="lsep" label="30082"/>
 		<setting type="lsep" label="[CR]"/>
-		<setting id="subscriptions_update" type="bool" label="30084" default="true"/>
-		<setting id="subscriptions_interval" type="enum" label="30085" values="2h|5h|10h|15h|24h" default="3" enable="!eq(-1,false)"/>
-		<setting id="subscriptions_updatelibrary" type="bool" label="30086" default="true" enable="eq(-2,true)"/>
+		<setting id="trakt_user" type="text" label="" visible="false" default=""/>
+		<setting id="trakt_password" type="text" label="" visible="false" default=""/>
+		<setting id="subscriptions_import" type="bool" label="30084" enable="!eq(-1,)+!eq(-2,)" default="false"/>
+		<setting id="subscriptions_update" type="bool" label="30085" default="true"/>
+		<setting id="subscriptions_interval" type="enum" label="30086" values="2h|5h|10h|15h|24h" default="3" enable="!eq(-1,false)|!eq(-2,false)"/>
+		<setting id="subscriptions_updatelibrary" type="bool" label="30087" default="true" enable="!eq(-2,false)|!eq(-3,false)"/>
 		<setting id="subscriptions_run" type="text" default="1970-01-01 23:59:00.000000" visible="false"/>
 	</category>
 
@@ -75,8 +78,7 @@
 		<setting id="trakt_user" type="text" label="30101" default=""/>
 		<setting id="trakt_password" type="text" option="hidden" label="30102" default=""/>
 		<setting type="lsep" label="IMDb"/>
-		<setting id="imdb_mail" type="text" label="30103" default=""/>
-		<setting id="imdb_password" type="text" option="hidden" label="30102" default=""/>
+		<setting id="imdb_user" type="text" label="30101" default=""/>
 		<setting type="lsep" label="Noobroom"/>
 		<setting id="noobroom_mail" type="text" label="30103" default=""/>
 		<setting id="noobroom_password" type="text" option="hidden" label="30102" default=""/>

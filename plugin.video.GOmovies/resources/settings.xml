@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="30000">
-		<setting id="autoplay" type="bool" label="30001" default="false"/>
-		<setting id="autoplay_library" type="bool" label="30002" default="false"/>
+		<setting id="autoplay" type="bool" label="30001" default="true"/>
+		<setting id="autoplay_library" type="bool" label="30002" default="true"/>
 		<setting id="resume_playback" type="bool" label="30012" default="true"/>
 		<setting id="playback_info" type="bool" label="30011" default="false"/>
 		<setting id="quality" type="bool" label="30003" default="true"/>
@@ -76,8 +76,7 @@
 		<setting id="trakt_user" type="text" label="30101" default=""/>
 		<setting id="trakt_password" type="text" option="hidden" label="30102" default=""/>
 		<setting type="lsep" label="IMDb"/>
-		<setting id="imdb_mail" type="text" label="30103" default=""/>
-		<setting id="imdb_password" type="text" option="hidden" label="30102" default=""/>
+		<setting id="imdb_user" type="text" label="30101" default=""/>
 		<setting type="lsep" label="Noobroom"/>
 		<setting id="noobroom_mail" type="text" label="30103" default=""/>
 		<setting id="noobroom_password" type="text" option="hidden" label="30102" default=""/>

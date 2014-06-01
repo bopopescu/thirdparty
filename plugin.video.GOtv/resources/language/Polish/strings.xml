@@ -36,9 +36,10 @@
 	<string id="30081">Subskrybcje zostaną zaimportowane do Biblioteki po dodaniu tego folderu jako źródło.</string>
 	<string id="30082">Najnowsze odcinki będa dostępne we wtyczce nawet jeśli tego nie zrobisz.</string>
 	<string id="30083">Folder TV</string>
-	<string id="30084">Automatyczna Aktualizacja Subskrybcji</string>
-	<string id="30085">Częstotliwość Aktualizacji Subskrybcji</string>
-	<string id="30086">Odśwież Bibliotekę po Aktualizacji Subskrybcji</string>
+	<string id="30084">Automatyczny Import kolekcji Trakt</string>
+	<string id="30085">Automatyczna Aktualizacja Subskrybcji</string>
+	<string id="30086">Częstotliwość Aktualizacji Subskrybcji</string>
+	<string id="30087">Odśwież Bibliotekę po Aktualizacji Subskrybcji</string>
 	<string id="30100">Logowanie</string>
 	<string id="30101">Login</string>
 	<string id="30102">Hasło</string>
@@ -83,15 +84,12 @@
 	<string id="30344">Chcesz je pobrać ponownie?</string>
 	<string id="30345">To wideo już jest pobierane.</string>
 	<string id="30346">Chcesz je przerwać?</string>
-	<string id="30347">Zdaje się, że serial jest zakończony.</string>
-	<string id="30348">Na pewno chcesz go dodać?</string>
-	<string id="30349">Zdaje się, że serial jest zakończony.</string>
-	<string id="30350">Na pewno chcesz go usunąć?</string>
-	<string id="30351">Ten serial pozostanie w Bibliotece.</string>
-	<string id="30352">Chcesz go usunąć z Biblioteki?</string>
-	<string id="30353">Wznów od</string>
-	<string id="30354">Wznów</string>
-	<string id="30355">Zacznij od poczatku</string>
+	<string id="30347">Film już w Bibliotece.</string>
+	<string id="30348">Serial już w Bibliotece.</string>
+	<string id="30349">Na pewno chcesz go dodać?</string>
+	<string id="30350">Wznów od</string>
+	<string id="30351">Wznów</string>
+	<string id="30352">Zacznij od poczatku</string>
 	<!-- Misc -->
 	<string id="30361">Następna Strona</string>
 	<string id="30362">Szukaj</string>

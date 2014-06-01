@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.GOtv" name="GOtv" version="2.2.0" provider-name="lambda, kodaxx">
+<addon id="plugin.video.GOtv" name="GOtv" version="2.3.0" provider-name="lambda, kodaxx">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.metahandler" version="2.4.0"/>
@@ -18,5 +18,4 @@
 		<description lang="en">Watch tv shows from various sources</description>
 		<platform>all</platform>
 	</extension>
-</addon>
 </addon>

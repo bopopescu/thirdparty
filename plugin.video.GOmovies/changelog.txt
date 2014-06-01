@@ -1,4 +1,28 @@
 ------------------------
+GOmovies v2.2.1 (18-May-14)
+------------------------
+
+- Fixed issues with IMDb lists.
+- NOTE: IMDb introduced captchas during login process.
+- NOTE: Insert your user ID in addon settings.
+- NOTE: Only public lists will be available.
+- NOTE: Prefer Trakt lists, they are faster.
+- Code cosmetics.
+
+
+------------------------
+GOmovies v2.2.0 (18-May-14)
+------------------------
+
+- Added Recently Added section.
+- Added option for importing trending movies to library.
+- Added option for importing recently added movies to library.
+- Updated all translations.
+- Tweaked context menus.
+- Code cosmetics.
+
+
+------------------------
 GOmovies v2.1.3 (11-May-14)
 ------------------------
 

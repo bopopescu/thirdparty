@@ -36,9 +36,10 @@
 	<string id="30081">Les Séries TV suivies seront ajoutées à la Médiathèque si ce dossier est ajouté aux sources de média.</string>
 	<string id="30082">Les derniers épisodes seront toujours disponibles dans cette extention.</string>
 	<string id="30083">Dossier des Séries TV</string>
-	<string id="30084">Mise à jour automatique des Séries TV suivies</string>
-	<string id="30085">Intervalle de la mise à jour des Séries TV suivies</string>
-	<string id="30086">Mettre la Médiathèque à jour avec les Séries TV suivies</string>
+	<string id="30084">Importation automatique de collection Trakt</string>
+	<string id="30085">Mise à jour automatique des Séries TV suivies</string>
+	<string id="30086">Intervalle de la mise à jour des Séries TV suivies</string>
+	<string id="30087">Mettre la Médiathèque à jour avec les Séries TV suivies</string>
 	<string id="30100">Comptes</string>
 	<string id="30101">User</string>
 	<string id="30102">Password</string>
@@ -83,15 +84,12 @@
 	<string id="30344">La télécharger à nouveau?</string>
 	<string id="30345">Le téléchargement de cette video est en cours.</string>
 	<string id="30346">Voulez vous l'annuler?</string>
-	<string id="30347">Cette Série TV semble être terminée.</string>
-	<string id="30348">Désirez-vous toujours la suivre?</string>
-	<string id="30349">Cette Série TV semble terminée.</string>
-	<string id="30350">Voulez-vous la retirer du suivi?</string>
-	<string id="30351">Cette Série TV est dans la Médiathèque .</string>
-	<string id="30352">Voulez-vous la retirer de la Médiathèque?</string>
-	<string id="30353">Reprendre la lecture depuis</string>
-	<string id="30354">Reprendre la lecture</string>
-	<string id="30355">Lire depuis le début</string>
+	<string id="30347">Film déjà dans la Médiathèque.</string>
+	<string id="30348">Série TV déjà dans la Médiathèque.</string>
+	<string id="30349">Désirez-vous toujours la suivre?</string>
+	<string id="30350">Reprendre la lecture depuis</string>
+	<string id="30351">Reprendre la lecture</string>
+	<string id="30352">Lire depuis le début</string>
 	<!-- Misc -->
 	<string id="30361">Page Suivante</string>
 	<string id="30362">Recherche</string>

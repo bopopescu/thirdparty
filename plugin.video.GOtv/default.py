@@ -123,7 +123,6 @@ class main:
         elif action == 'subscription_delete':       contextMenu().subscription_delete(name, url)
         elif action == 'subscriptions_update':      contextMenu().subscriptions_update()
         elif action == 'subscriptions_service':     contextMenu().subscriptions_update(silent=True)
-        elif action == 'subscriptions_clean':       contextMenu().subscriptions_clean()
         elif action == 'playlist_open':             contextMenu().playlist_open()
         elif action == 'settings_open':             contextMenu().settings_open()
         elif action == 'addon_home':                contextMenu().addon_home()
@@ -138,7 +137,6 @@ class main:
         elif action == 'playcount_seasons':         contextMenu().playcount('season', imdb, season, '')
         elif action == 'playcount_episodes':        contextMenu().playcount('episode', imdb, season, episode)
         elif action == 'subscriptions_batch':       contextMenu().subscriptions_batch(url)
-        elif action == 'library_batch':             contextMenu().library_batch(url)
         elif action == 'library':                   contextMenu().library(name, url, imdb, year)
         elif action == 'download':                  contextMenu().download(name, title, imdb, tvdb, year, season, episode, show, show_alt)
         elif action == 'sources':                   contextMenu().sources(name, title, imdb, tvdb, year, season, episode, show, show_alt)
@@ -234,13 +232,18 @@ class Thread(threading.Thread):
 class player(xbmc.Player):
     def __init__ (self):
         self.folderPath = xbmc.getInfoLabel('Container.FolderPath')
+        self.PseudoTVRunning = index().getProperty('PseudoTVRunning')
         self.loadingStarting = time.time()
         xbmc.Player.__init__(self)
 
     def run(self, name, url, imdb='0'):
         self.video_info(name, imdb)
 
-        if self.folderPath.startswith(sys.argv[0]):
+        if self.PseudoTVRunning == 'True':
+            item = xbmcgui.ListItem(path=url)
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
+            return
+        elif self.folderPath.startswith(sys.argv[0]):
             item = xbmcgui.ListItem(path=url)
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
         else:
@@ -344,12 +347,14 @@ class player(xbmc.Player):
         minutes, seconds = divmod(offset, 60)
         hours, minutes = divmod(minutes, 60)
         offset_time = '%02d:%02d:%02d' % (hours, minutes, seconds)
-        yes = index().yesnoDialog('%s %s' % (language(30353).encode("utf-8"), offset_time), '', self.name, language(30354).encode("utf-8"), language(30355).encode("utf-8"))
+        yes = index().yesnoDialog('%s %s' % (language(30350).encode("utf-8"), offset_time), '', self.name, language(30351).encode("utf-8"), language(30352).encode("utf-8"))
         if yes: self.seekTime(offset)
 
     def onPlayBackStarted(self):
         try: self.setSubtitles(self.subtitle)
         except: pass
+
+        if self.PseudoTVRunning == 'True': return
 
         if getSetting("playback_info") == 'true':
             elapsedTime = '%s %.2f seconds' % (language(30319).encode("utf-8"), (time.time() - self.loadingStarting))     
@@ -360,11 +365,13 @@ class player(xbmc.Player):
             self.resume_playback()
 
     def onPlayBackEnded(self):
+        if self.PseudoTVRunning == 'True': return
         self.change_watched()
         self.offset_delete()
         self.container_refresh()
 
     def onPlayBackStopped(self):
+        if self.PseudoTVRunning == 'True': return
         if self.currentTime / self.totalTime >= .9:
             self.change_watched()
         self.offset_delete()
@@ -514,9 +521,10 @@ class index:
                 u = '%s?action=%s' % (sys.argv[0], action)
 
                 cm = []
-                if action.endswith('_subscriptions'):
+                if action == 'shows_trending':
+                    cm.append((language(30423).encode("utf-8"), 'RunPlugin(%s?action=subscriptions_batch&url=%s)' % (sys.argv[0], action)))
+                elif action.endswith('_subscriptions'):
                     cm.append((language(30425).encode("utf-8"), 'RunPlugin(%s?action=subscriptions_update)' % (sys.argv[0])))
-                    cm.append((language(30426).encode("utf-8"), 'RunPlugin(%s?action=subscriptions_clean)' % (sys.argv[0])))
 
                 item = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=image)
                 item.setInfo( type="Video", infoLabels={ "Label": name, "Title": name, "Plot": addonDesc } )
@@ -581,7 +589,6 @@ class index:
 
                 cm = []
                 cm.append((language(30423).encode("utf-8"), 'RunPlugin(%s?action=subscriptions_batch&url=%s)' % (sys.argv[0], sysurl)))
-                cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library_batch&url=%s)' % (sys.argv[0], sysurl)))
 
                 item = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=image)
                 item.setInfo( type="Video", infoLabels={ "Label": name, "Title": name, "Plot": addonDesc } )
@@ -643,6 +650,7 @@ class index:
 
                 if getmeta == 'true':
                     meta = metaget.get_meta('tvshow', title, imdb_id=imdb)
+                    meta.update({'playcount': 0, 'overlay': 0})
                     playcountMenu = language(30407).encode("utf-8")
                     if meta['overlay'] == 6: playcountMenu = language(30408).encode("utf-8")
                     metaimdb = urllib.quote_plus(re.sub('[^0-9]', '', meta['imdb_id']))
@@ -666,28 +674,25 @@ class index:
                 cm.append((language(30413).encode("utf-8"), 'Action(Info)'))
                 if action == 'shows_favourites':
                     if getmeta == 'true': cm.append((language(30415).encode("utf-8"), 'RunPlugin(%s?action=metadata_tvshows&imdb=%s)' % (sys.argv[0], metaimdb)))
-                    if getmeta == 'true': cm.append((playcountMenu, 'RunPlugin(%s?action=playcount_tvshows&imdb=%s)' % (sys.argv[0], metaimdb)))
+                    #if getmeta == 'true': cm.append((playcountMenu, 'RunPlugin(%s?action=playcount_tvshows&imdb=%s)' % (sys.argv[0], metaimdb)))
                     if not '"%s"' % url in subRead: cm.append((language(30423).encode("utf-8"), 'RunPlugin(%s?action=subscription_add&name=%s&imdb=%s&url=%s&image=%s&year=%s)' % (sys.argv[0], sysname, sysimdb, sysurl, sysimage, sysyear)))
                     else: cm.append((language(30424).encode("utf-8"), 'RunPlugin(%s?action=subscription_delete&name=%s&url=%s)' % (sys.argv[0], sysname, sysurl)))
-                    cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library&name=%s&url=%s&imdb=%s&year=%s)' % (sys.argv[0], sysname, sysurl, sysimdb, sysyear)))
                     cm.append((language(30429).encode("utf-8"), 'RunPlugin(%s?action=view_tvshows)' % (sys.argv[0])))
                     if getSetting("fav_sort") == '2': cm.append((language(30419).encode("utf-8"), 'RunPlugin(%s?action=favourite_moveUp&name=%s&url=%s)' % (sys.argv[0], sysname, sysurl)))
                     if getSetting("fav_sort") == '2': cm.append((language(30420).encode("utf-8"), 'RunPlugin(%s?action=favourite_moveDown&name=%s&url=%s)' % (sys.argv[0], sysname, sysurl)))
                     cm.append((language(30421).encode("utf-8"), 'RunPlugin(%s?action=favourite_delete&name=%s&url=%s)' % (sys.argv[0], sysname, sysurl)))
                 elif action == 'shows_subscriptions':
                     if getmeta == 'true': cm.append((language(30415).encode("utf-8"), 'RunPlugin(%s?action=metadata_tvshows&imdb=%s)' % (sys.argv[0], metaimdb)))
-                    if getmeta == 'true': cm.append((playcountMenu, 'RunPlugin(%s?action=playcount_tvshows&imdb=%s)' % (sys.argv[0], metaimdb)))
+                    #if getmeta == 'true': cm.append((playcountMenu, 'RunPlugin(%s?action=playcount_tvshows&imdb=%s)' % (sys.argv[0], metaimdb)))
                     if not '"%s"' % url in subRead: cm.append((language(30423).encode("utf-8"), 'RunPlugin(%s?action=subscription_add&name=%s&imdb=%s&url=%s&image=%s&year=%s)' % (sys.argv[0], sysname, sysimdb, sysurl, sysimage, sysyear)))
                     else: cm.append((language(30424).encode("utf-8"), 'RunPlugin(%s?action=subscription_delete&name=%s&url=%s)' % (sys.argv[0], sysname, sysurl)))
                     cm.append((language(30425).encode("utf-8"), 'RunPlugin(%s?action=subscriptions_update)' % (sys.argv[0])))
-                    cm.append((language(30426).encode("utf-8"), 'RunPlugin(%s?action=subscriptions_clean)' % (sys.argv[0])))
                     if not '"%s"' % url in favRead: cm.append((language(30417).encode("utf-8"), 'RunPlugin(%s?action=favourite_add&name=%s&imdb=%s&url=%s&image=%s&year=%s)' % (sys.argv[0], sysname, sysimdb, sysurl, sysimage, sysyear)))
                     else: cm.append((language(30418).encode("utf-8"), 'RunPlugin(%s?action=favourite_delete&name=%s&url=%s)' % (sys.argv[0], sysname, sysurl)))
                     cm.append((language(30429).encode("utf-8"), 'RunPlugin(%s?action=view_tvshows)' % (sys.argv[0])))
                     cm.append((language(30409).encode("utf-8"), 'RunPlugin(%s?action=settings_open)' % (sys.argv[0])))
                 elif action.startswith('shows_search'):
                     cm.append((language(30423).encode("utf-8"), 'RunPlugin(%s?action=subscription_from_search&name=%s&imdb=%s&url=%s&image=%s&year=%s)' % (sys.argv[0], sysname, sysimdb, sysurl, sysimage, sysyear)))
-                    cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library&name=%s&url=%s&imdb=%s&year=%s)' % (sys.argv[0], sysname, sysurl, sysimdb, sysyear)))
                     cm.append((language(30417).encode("utf-8"), 'RunPlugin(%s?action=favourite_from_search&name=%s&imdb=%s&url=%s&image=%s&year=%s)' % (sys.argv[0], sysname, sysimdb, sysurl, sysimage, sysyear)))
                     cm.append((language(30429).encode("utf-8"), 'RunPlugin(%s?action=view_tvshows)' % (sys.argv[0])))
                     cm.append((language(30409).encode("utf-8"), 'RunPlugin(%s?action=settings_open)' % (sys.argv[0])))
@@ -697,7 +702,6 @@ class index:
                     if getmeta == 'true': cm.append((language(30415).encode("utf-8"), 'RunPlugin(%s?action=metadata_tvshows2&imdb=%s)' % (sys.argv[0], metaimdb)))
                     if not '"%s"' % url in subRead: cm.append((language(30423).encode("utf-8"), 'RunPlugin(%s?action=subscription_add&name=%s&imdb=%s&url=%s&image=%s&year=%s)' % (sys.argv[0], sysname, sysimdb, sysurl, sysimage, sysyear)))
                     else: cm.append((language(30424).encode("utf-8"), 'RunPlugin(%s?action=subscription_delete&name=%s&url=%s)' % (sys.argv[0], sysname, sysurl)))
-                    cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library&name=%s&url=%s&imdb=%s&year=%s)' % (sys.argv[0], sysname, sysurl, sysimdb, sysyear)))
                     if not '"%s"' % url in favRead: cm.append((language(30417).encode("utf-8"), 'RunPlugin(%s?action=favourite_add&name=%s&imdb=%s&url=%s&image=%s&year=%s)' % (sys.argv[0], sysname, sysimdb, sysurl, sysimage, sysyear)))
                     else: cm.append((language(30418).encode("utf-8"), 'RunPlugin(%s?action=favourite_delete&name=%s&url=%s)' % (sys.argv[0], sysname, sysurl)))
                     cm.append((language(30429).encode("utf-8"), 'RunPlugin(%s?action=view_tvshows)' % (sys.argv[0])))
@@ -755,7 +759,8 @@ class index:
                 u = '%s?action=episodes&name=%s&url=%s&image=%s&year=%s&imdb=%s&tvdb=%s&genre=%s&plot=%s&show=%s&show_alt=%s' % (sys.argv[0], sysname, sysurl, sysimage, sysyear, sysimdb, systvdb, sysgenre, sysplot, sysshow, sysshow_alt)
 
                 if getSetting("meta") == 'true':
-                    meta.update({'playcount': season_meta[i]['playcount'], 'overlay': season_meta[i]['overlay']})
+                    meta.update({'playcount': 0, 'overlay': 0})
+                    #meta.update({'playcount': season_meta[i]['playcount'], 'overlay': season_meta[i]['overlay']})
                     poster = season_meta[i]['cover_url']
                     playcountMenu = language(30407).encode("utf-8")
                     if season_meta[i]['overlay'] == 6: playcountMenu = language(30408).encode("utf-8")
@@ -773,7 +778,7 @@ class index:
                 cm.append((language(30404).encode("utf-8"), 'RunPlugin(%s?action=item_queue)' % (sys.argv[0])))
                 cm.append((language(30413).encode("utf-8"), 'Action(Info)'))
                 if getSetting("meta") == 'true': cm.append((language(30415).encode("utf-8"), 'RunPlugin(%s?action=metadata_seasons&imdb=%s&season=%s)' % (sys.argv[0], metaimdb, metaseason)))
-                if getSetting("meta") == 'true': cm.append((playcountMenu, 'RunPlugin(%s?action=playcount_seasons&imdb=%s&season=%s)' % (sys.argv[0], metaimdb, metaseason)))
+                #if getSetting("meta") == 'true': cm.append((playcountMenu, 'RunPlugin(%s?action=playcount_seasons&imdb=%s&season=%s)' % (sys.argv[0], metaimdb, metaseason)))
                 cm.append((language(30430).encode("utf-8"), 'RunPlugin(%s?action=view_seasons)' % (sys.argv[0])))
                 cm.append((language(30409).encode("utf-8"), 'RunPlugin(%s?action=settings_open)' % (sys.argv[0])))
                 cm.append((language(30410).encode("utf-8"), 'RunPlugin(%s?action=playlist_open)' % (sys.argv[0])))
@@ -1031,50 +1036,67 @@ class contextMenu:
         except:
             return
 
-    def subscription_add(self, name, url, image, imdb, year, silent=False):
+    def subscription_add(self, name, url, image, imdb, year, update=True, silent=False):
         try:
-            status = metaget.get_meta('tvshow', name, imdb_id=imdb)['status']
-            if status == 'Ended':
-            	yes = index().yesnoDialog(language(30347).encode("utf-8"), language(30348).encode("utf-8"), name)
-            	if not yes: return
-
             file = xbmcvfs.File(subData)
             read = file.read()
             file.close()
+
+            lib = self.library(name, url, imdb, year, check=True, silent=True)
+            if (silent == False and lib == False):
+                yes = index().yesnoDialog(language(30348).encode("utf-8"), language(30349).encode("utf-8"), name)
+                if yes:
+                    self.library(name, url, imdb, year, silent=True)
+                else:
+                    return
+            elif lib == False:
+                return
+
             write = [i.strip('\n').strip('\r') for i in read.splitlines(True) if i.strip('\r\n')]
             write.append('"%s"|"%s"|"%s"|"%s"|"%s"' % (name, year, imdb, url, image))
             write = '\r\n'.join(write)
             file = xbmcvfs.File(subData, 'w')
             file.write(str(write))
             file.close()
-
-            self.library(name, url, imdb, year, silent=True)
             if silent == False:
                 index().container_refresh()
                 index().infoDialog(language(30312).encode("utf-8"), name)
+            if update == True:
+                xbmc.executebuiltin('UpdateLibrary(video)')
         except:
             return
 
-    def subscription_from_search(self, name, url, image, imdb, year):
+    def subscription_from_search(self, name, url, image, imdb, year, update=True, silent=False):
         try:
             file = xbmcvfs.File(subData)
             read = file.read()
             file.close()
+
             if '"%s"' % url in read:
                 index().infoDialog(language(30316).encode("utf-8"), name)
                 return
-            status = metaget.get_meta('tvshow', name, imdb_id=imdb)['status']
-            if status == 'Ended':
-            	yes = index().yesnoDialog(language(30347).encode("utf-8"), language(30348).encode("utf-8"), name)
-            	if not yes: return
+
+            lib = self.library(name, url, imdb, year, check=True, silent=True)
+            if (silent == False and lib == False):
+                yes = index().yesnoDialog(language(30348).encode("utf-8"), language(30349).encode("utf-8"), name)
+                if yes:
+                    self.library(name, url, imdb, year, silent=True)
+                else:
+                    return
+            elif lib == False:
+                return
+
             write = [i.strip('\n').strip('\r') for i in read.splitlines(True) if i.strip('\r\n')]
             write.append('"%s"|"%s"|"%s"|"%s"|"%s"' % (name, year, imdb, url, image))
             write = '\r\n'.join(write)
             file = xbmcvfs.File(subData, 'w')
             file.write(str(write))
             file.close()
-            self.library(name, url, imdb, year, silent=True)
-            index().infoDialog(language(30312).encode("utf-8"), name)
+            if silent == False:
+                index().container_refresh()
+                index().infoDialog(language(30312).encode("utf-8"), name)
+            if update == True:
+                xbmc.executebuiltin('UpdateLibrary(video)')
         except:
             return
 
@@ -1090,41 +1112,47 @@ class contextMenu:
             file.write(str(write))
             file.close()
 
-            yes = index().yesnoDialog(language(30351).encode("utf-8"), language(30352).encode("utf-8"), name)
-            if yes:
-                library = xbmc.translatePath(getSetting("tv_library"))
-                enc_show = name.translate(None, '\/:*?"<>|')
-                folder = os.path.join(library, enc_show)
-                seasons = [os.path.join(folder, i) for i in xbmcvfs.listdir(folder)[0]]
-                for season in seasons:
-                    episodes = [os.path.join(season, i) for i in xbmcvfs.listdir(season)[1]]
-                    for episode in episodes: xbmcvfs.delete(episode)
-                    xbmcvfs.rmdir(season)
-                xbmcvfs.rmdir(folder)
-
             if silent == False:
                 index().container_refresh()
                 index().infoDialog(language(30313).encode("utf-8"), name)
         except:
             return
 
-    def subscriptions_clean(self):
+    def subscriptions_update(self, silent=False):
+        url = link().trakt_collection % (link().trakt_key, link().trakt_user)
+        if getSetting("subscriptions_import") == 'true' and not (link().trakt_user == '' or link().trakt_password == ''):
+            self.subscriptions_batch(url, silent=silent)
+        else:
+            self.subscriptions_batch2(silent=silent)
+
+    def subscriptions_batch(self, url, update=True, silent=False):
         try:
             file = xbmcvfs.File(subData)
             read = file.read()
             file.close()
-            match = re.compile('"(.+?)"[|]"(.+?)"[|]"(.+?)"[|]"(.+?)"').findall(read)
-            for name, imdb, url, image in match:
-            	status = metaget.get_meta('tvshow', name, imdb_id=imdb)['status']
-            	if status == 'Ended':
-            	    yes = index().yesnoDialog(language(30349).encode("utf-8"), language(30350).encode("utf-8"), name)
-            	    if yes: self.subscription_delete(name, url, silent=True)
-            index().container_refresh()
-            index().infoDialog(language(30315).encode("utf-8"))
         except:
             return
 
-    def subscriptions_update(self, silent=False):
+        if url == 'shows_trending':
+            showList = shows().trending(idx=False)
+        else:
+            showList = shows().get(url, idx=False)
+
+        if showList == None: return
+        for i in showList:
+            if xbmc.abortRequested == True: sys.exit()
+            show = re.sub('\s(|[(])(UK|US|AU|\d{4})(|[)])$', '', i['name'])
+            if '"%s"' % i['url'] in read:
+                self.library(show, i['url'], i['imdb'], i['year'], silent=True)
+            else:
+                try: self.subscription_add(show, i['url'], i['image'], i['imdb'], i['year'], update=False, silent=True)
+                except: pass
+        if silent == False:
+            index().infoDialog(language(30312).encode("utf-8"))
+        if update == True and getSetting("subscriptions_updatelibrary") == 'true':
+            xbmc.executebuiltin('UpdateLibrary(video)')
+
+    def subscriptions_batch2(self, silent=False):
         try:
             file = xbmcvfs.File(subData)
             read = file.read()
@@ -1133,10 +1161,56 @@ class contextMenu:
             for name, year, imdb, url, image in match:
                 if xbmc.abortRequested == True: sys.exit()
                 self.library(name, url, imdb, year, silent=True)
-            if getSetting("subscriptions_update") == 'true' and getSetting("subscriptions_updatelibrary") == 'true':
+            if getSetting("subscriptions_updatelibrary") == 'true':
                 xbmc.executebuiltin('UpdateLibrary(video)')
             if silent == False:
                 index().infoDialog(language(30314).encode("utf-8"))
+        except:
+            return
+
+    def library(self, name, url, imdb, year, check=False, silent=False):
+        try:
+            library = xbmc.translatePath(getSetting("tv_library"))
+            xbmcvfs.mkdir(dataPath)
+            xbmcvfs.mkdir(library)
+            show = name
+            seasonList = seasons().get(url, '', year, imdb, '', '', show, idx=False)
+        except:
+            return
+
+        try:
+            if check == False: raise Exception()
+            year, tvdb = seasonList[0]['year'], seasonList[0]['tvdb']
+            data = xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "VideoLibrary.GetTVShows", "params": {"filter":{"or": [{"field": "year", "operator": "is", "value": "%s"}, {"field": "year", "operator": "is", "value": "%s"}, {"field": "year", "operator": "is", "value": "%s"}]}, "properties" : ["imdbnumber"]}, "id": 1}' % (year, str(int(year)+1), str(int(year)-1)))
+            data = unicode(data, 'utf-8', errors='ignore')
+            data = json.loads(data)
+            data = data['result']['tvshows']
+            data = [i for i in data if tvdb in i['imdbnumber']][0]
+            return False
+        except:
+            pass
+
+        try:
+            for i in seasonList:
+                season, seasonUrl, tvdb, show_alt, idx_data = i['name'], i['url'], i['tvdb'], i['show_alt'], i['idx_data']
+                enc_show = show_alt.translate(None, '\/:*?"<>|')
+                folder = os.path.join(library, enc_show)
+                xbmcvfs.mkdir(folder)
+                enc_season = season.translate(None, '\/:*?"<>|')
+                seasonDir = os.path.join(folder, enc_season)
+                xbmcvfs.mkdir(seasonDir)
+                episodeList = episodes().get(season, seasonUrl, '', year, imdb, tvdb, '', '', show, show_alt, idx_data, idx=False)
+                for i in episodeList:
+                    name, title, imdb, tvdb, year, season, episode, show, show_alt, date = i['name'], i['title'], i['imdb'], i['tvdb'], i['year'], i['season'], i['episode'], i['show'], i['show_alt'], i['date']
+                    sysname, systitle, sysimdb, systvdb, sysyear, sysseason, sysepisode, sysshow, sysshow_alt, sysdate = urllib.quote_plus(name), urllib.quote_plus(title), urllib.quote_plus(imdb), urllib.quote_plus(tvdb), urllib.quote_plus(year), urllib.quote_plus(season), urllib.quote_plus(episode), urllib.quote_plus(show), urllib.quote_plus(show_alt), urllib.quote_plus(date)
+                    content = '%s?action=play&name=%s&title=%s&imdb=%s&tvdb=%s&year=%s&season=%s&episode=%s&show=%s&show_alt=%s&date=%s' % (sys.argv[0], sysname, systitle, sysimdb, systvdb, sysyear, sysseason, sysepisode, sysshow, sysshow_alt, sysdate)
+                    enc_name = name.translate(None, '\/:*?"<>|')
+                    stream = os.path.join(seasonDir, enc_name + '.strm')
+                    file = xbmcvfs.File(stream, 'w')
+                    file.write(str(content))
+                    file.close()
+            if silent == False:
+                index().infoDialog(language(30311).encode("utf-8"), show)
         except:
             return
 
@@ -1158,65 +1232,6 @@ class contextMenu:
         try:
             metaget.change_watched(content, '', imdb, season=season, episode=episode, year='', watched='')
             index().container_refresh()
-        except:
-            return
-
-    def subscriptions_batch(self, url, update=True, silent=False):
-        try:
-            file = xbmcvfs.File(subData)
-            read = file.read()
-            file.close()
-        except:
-            return
-        showList = shows().get(url, idx=False)
-        if showList == None: return
-        for i in showList:
-            if '"%s"' % i['url'] in read: continue
-            try: self.subscription_add(i['name'], i['url'], i['image'], i['imdb'], i['year'], silent=True)
-            except: pass
-        if silent == False:
-            index().infoDialog(language(30312).encode("utf-8"))
-        if update == True:
-            xbmc.executebuiltin('UpdateLibrary(video)')
-
-    def library_batch(self, url, update=True, silent=False):
-        showList = shows().get(url, idx=False)
-        if showList == None: return
-        for i in showList:
-            try: self.library(i['name'], i['url'], i['imdb'], i['year'], silent=True)
-            except: pass
-        if silent == False:
-            index().infoDialog(language(30311).encode("utf-8"))
-        if update == True:
-            xbmc.executebuiltin('UpdateLibrary(video)')
-
-    def library(self, name, url, imdb, year, silent=False):
-        try:
-            library = xbmc.translatePath(getSetting("tv_library"))
-            xbmcvfs.mkdir(dataPath)
-            xbmcvfs.mkdir(library)
-            show = name
-            seasonList = seasons().get(url, '', year, imdb, '', '', show, idx=False)
-            for i in seasonList:
-                season, seasonUrl, tvdb, show_alt = i['name'], i['url'], i['tvdb'], i['show_alt']
-                enc_show = show_alt.translate(None, '\/:*?"<>|')
-                folder = os.path.join(library, enc_show)
-                xbmcvfs.mkdir(folder)
-                enc_season = season.translate(None, '\/:*?"<>|')
-                seasonDir = os.path.join(folder, enc_season)
-                xbmcvfs.mkdir(seasonDir)
-                episodeList = episodes().get(season, seasonUrl, '', year, imdb, tvdb, '', '', show, show_alt, idx=False)
-                for i in episodeList:
-                    name, title, imdb, tvdb, year, season, episode, show, show_alt, date = i['name'], i['title'], i['imdb'], i['tvdb'], i['year'], i['season'], i['episode'], i['show'], i['show_alt'], i['date']
-                    sysname, systitle, sysimdb, systvdb, sysyear, sysseason, sysepisode, sysshow, sysshow_alt, sysdate = urllib.quote_plus(name), urllib.quote_plus(title), urllib.quote_plus(imdb), urllib.quote_plus(tvdb), urllib.quote_plus(year), urllib.quote_plus(season), urllib.quote_plus(episode), urllib.quote_plus(show), urllib.quote_plus(show_alt), urllib.quote_plus(date)
-                    content = '%s?action=play&name=%s&title=%s&imdb=%s&tvdb=%s&year=%s&season=%s&episode=%s&show=%s&show_alt=%s&date=%s' % (sys.argv[0], sysname, systitle, sysimdb, systvdb, sysyear, sysseason, sysepisode, sysshow, sysshow_alt, sysdate)
-                    enc_name = name.translate(None, '\/:*?"<>|')
-                    stream = os.path.join(seasonDir, enc_name + '.strm')
-                    file = xbmcvfs.File(stream, 'w')
-                    file.write(str(content))
-                    file.close()
-            if silent == False:
-                index().infoDialog(language(30311).encode("utf-8"), show)
         except:
             return
 
@@ -1428,7 +1443,7 @@ class root:
         rootList.append({'name': 30508, 'image': 'Genres.png', 'action': 'genres_shows'})
         if not (getSetting("trakt_user") == '' or getSetting("trakt_password") == ''):
             rootList.append({'name': 30509, 'image': 'Trakt.png', 'action': 'userlists_trakt'})
-        if not (getSetting("imdb_mail") == '' or getSetting("imdb_password") == ''):
+        if not (getSetting("imdb_user") == ''):
             rootList.append({'name': 30510, 'image': 'IMDb.png', 'action': 'userlists_imdb'})
         rootList.append({'name': 30511, 'image': 'Favourites.png', 'action': 'shows_favourites'})
         rootList.append({'name': 30512, 'image': 'Subscriptions.png', 'action': 'shows_subscriptions'})
@@ -1462,11 +1477,10 @@ class link:
         self.imdb_actors_search = 'http://www.imdb.com/search/name?count=100&name=%s'
         self.imdb_actors = 'http://m.imdb.com/name/nm%s/filmotype/%s'
 
-        self.imdb_login = 'https://secure.imdb.com/oauth/m_login?origpath=/&ref_=m_nv_usr_lgin'
-        self.imdb_user = 'http://akas.imdb.com/user/%s/lists?tab=all&sort=modified:desc&filter=titles'
-        self.imdb_watchlist ='http://m.imdb.com/list/userlist_json?list_class=watchlist&limit=10000'
-        self.imdb_list ='http://m.imdb.com/list/userlist_json?list_class=%s&limit=10000'
-        self.imdb_mail, self.imdb_password = getSetting("imdb_mail"), getSetting("imdb_password")
+        self.imdb_userlists = 'http://akas.imdb.com/user/%s/lists?tab=all&sort=modified:desc&filter=titles'
+        self.imdb_watchlist ='http://akas.imdb.com/user/%s/watchlist?view=detail&count=100&sort=listorian:asc&start=1'
+        self.imdb_list ='http://akas.imdb.com/list/%s/?view=detail&count=100&sort=listorian:asc&start=1'
+        self.imdb_user = 'ur' + getSetting("imdb_user").replace('ur', '')
 
         self.tvdb_base = 'http://thetvdb.com'
         self.tvdb_key = base64.urlsafe_b64decode('MUQ2MkYyRjkwMDMwQzQ0NA==')
@@ -1646,25 +1660,15 @@ class userlists:
 
         try:
             userlists = []
-
-            #cookie = self.imdb_cookie(link().imdb_mail, link().imdb_password)
-            cookie = cache3(self.imdb_cookie, link().imdb_mail, link().imdb_password)
-
-            result = getUrl(link().imdb_akas, cookie=cookie).result
+            result = getUrl(link().imdb_userlists % link().imdb_user).result
             result = result.decode('iso-8859-1').encode('utf-8')
-            id = re.compile('/user/(ur.+?)/').findall(result)[0]
-
-            result = getUrl(link().imdb_user % id, cookie=cookie).result
-            result = result.decode('iso-8859-1').encode('utf-8')
-
-            userlists = common.parseDOM(result, "table", attrs = { "class": "lists" })[0]
-            userlists = common.parseDOM(userlists, "tr", attrs = { "id": ".+?" })
+            userlists = common.parseDOM(result, "div", attrs = { "class": "list_name" })
         except:
             pass
 
         for userlist in userlists:
             try:
-                name = common.parseDOM(userlist, "a", ret="title")[0]
+                name = common.parseDOM(userlist, "a")[0]
                 name = common.replaceHTMLCodes(name)
                 name = name.encode('utf-8')
 
@@ -1679,17 +1683,10 @@ class userlists:
 
         index().userList(self.list)
 
-    def imdb_cookie(self, mail, password):
-        try:
-            post = 'login=%s&password=%s' % (urllib.quote_plus(mail), urllib.quote_plus(password))
-            cookie = getUrl(link().imdb_login, post=post, output='cookie').result
-            return cookie
-        except:
-            return
-
 class shows:
     def __init__(self):
         self.list = []
+        self.data = []
 
     def get(self, url, idx=True):
         if url.startswith(link().imdb_base) or url.startswith(link().imdb_akas):
@@ -1701,12 +1698,12 @@ class shows:
         elif url.startswith(link().trakt_base):
             self.list = self.trakt_list(url)
         elif url == 'watchlist':
-            self.list = self.imdb_list3(link().imdb_watchlist)
+            self.list = self.imdb_list3(link().imdb_watchlist % link().imdb_user)
         elif url == 'watchadded':
-            self.list = self.imdb_list3(link().imdb_watchlist)
+            self.list = self.imdb_list3(link().imdb_watchlist % link().imdb_user)
             self.list = self.list[::-1]
         elif url == 'watchtitle':
-            self.list = self.imdb_list3(link().imdb_watchlist)
+            self.list = self.imdb_list3(link().imdb_watchlist % link().imdb_user)
             self.list = sorted(self.list, key=itemgetter('name'))
         else:
             self.list = self.imdb_list3(link().imdb_list % url)
@@ -1715,7 +1712,6 @@ class shows:
         if idx == False: return self.list
         index().showList(self.list)
         index().nextList(self.list)
-
 
     def popular(self):
         #self.list = self.imdb_list(link().imdb_popular)
@@ -1741,9 +1737,10 @@ class shows:
         index().showList(self.list)
         index().nextList(self.list)
 
-    def trending(self):
+    def trending(self, idx=True):
         #self.list = self.trakt_list(link().trakt_trending % link().trakt_key)
         self.list = cache2(self.trakt_list, link().trakt_trending % link().trakt_key)
+        if idx == False: return self.list[:100]
         index().showList(self.list[:100])
 
     def search(self, query=None):
@@ -1874,48 +1871,68 @@ class shows:
 
     def imdb_list3(self, url):
         try:
-            #cookie = userlists().imdb_cookie(link().imdb_mail, link().imdb_password)
-            cookie = cache3(userlists().imdb_cookie, link().imdb_mail, link().imdb_password)
+            url = url.replace(link().imdb_base, link().imdb_akas)
+            result = getUrl(url).result
 
-            result = getUrl(url, cookie=cookie).result
-            result = json.loads(result)
-            shows = result['list']
+            try:
+                threads = []
+                pages = common.parseDOM(result, "div", attrs = { "class": "pagination" })[0]
+                pages = re.compile('.+?\d+.+?(\d+)').findall(pages)[0]
+
+                for i in range(1, int(pages)):
+                    self.data.append('')
+                    showsUrl = url.replace('&start=1', '&start=%s' % str(i*100+1))
+                    threads.append(Thread(self.thread, showsUrl, i-1))
+                [i.start() for i in threads]
+                [i.join() for i in threads]
+                for i in self.data: result += i
+            except:
+                pass
+
+            result = result.replace('\n','')
+            shows = common.parseDOM(result, "div", attrs = { "class": "list_item.+?" })
         except:
             return
 
         for show in shows:
             try:
-                type = show['placeholder']
-                if not type.startswith('tv'): raise Exception()
-
-                name = show['title']
+                name = common.parseDOM(show, "a", attrs = { "onclick": ".+?" })[-1]
                 name = common.replaceHTMLCodes(name)
                 name = name.encode('utf-8')
 
-                year = show['extra']
-                year = re.sub('[^0-9]', '', year)[:4]
+                year = common.parseDOM(show, "span", attrs = { "class": "year_type" })[0]
+                if not 'series' in year.lower(): raise Exception()
+                year = re.compile('[(](\d{4})').findall(year)[0]
                 year = year.encode('utf-8')
 
                 if int(year) > int((datetime.datetime.utcnow() - datetime.timedelta(hours = 5)).strftime("%Y")): raise Exception()
 
-                url = show['url']
+                url = common.parseDOM(show, "a", ret="href")[0]
                 url = '%s%s' % (link().imdb_base, url)
                 url = common.replaceHTMLCodes(url)
                 url = url.encode('utf-8')
 
-                imdb = re.sub('[^0-9]', '', url.rsplit('tt', 1)[-1])
-                imdb = imdb.encode('utf-8')
-
                 try:
-                    image = show['img']['url']
-                    if not ('_SX' in image or '_SY' in image): raise Exception()
-                    image = image.rsplit('_SX', 1)[0].rsplit('_SY', 1)[0].rsplit('_CR', 1)[0] + '_SX500.' + image.rsplit('.', 1)[-1]
+                    image = common.parseDOM(show, "img", ret="src")[0]
+                    if not ('._SX' in image or '._SY' in image): raise Exception()
+                    image = image.rsplit('._SX', 1)[0].rsplit('._SY', 1)[0] + '._SX500.' + image.rsplit('.', 1)[-1]
                 except:
                     image = link().imdb_image
                 image = common.replaceHTMLCodes(image)
                 image = image.encode('utf-8')
 
-                self.list.append({'name': name, 'url': url, 'image': image, 'year': year, 'imdb': imdb, 'genre': '', 'plot': ''})
+                imdb = re.sub('[^0-9]', '', url.rsplit('tt', 1)[-1])
+                imdb = imdb.encode('utf-8')
+
+                try:
+                    plot = common.parseDOM(show, "div", attrs = { "class": "item_description" })[0]
+                    plot = plot.rsplit('<span>', 1)[0].strip()
+                    plot = common.replaceHTMLCodes(plot)
+                    plot = plot.encode('utf-8')
+                except:
+                    plot = ''
+
+                self.list.append({'name': name, 'url': url, 'image': image, 'year': year, 'imdb': imdb, 'genre': '', 'plot': plot})
             except:
                 pass
 
@@ -1985,6 +2002,13 @@ class shows:
 
         return self.list
 
+    def thread(self, url, i):
+        try:
+            result = getUrl(url).result
+            self.data[i] = result
+        except:
+            return
+
 class seasons:
     def __init__(self):
         self.list = []
@@ -2022,18 +2046,21 @@ class seasons:
             pass
 
         try:
+            self.list = []
             seasonList = self.tvrage_list(url, image, year, imdb, tvdb, genre, plot, show, show_alt)
             if not (seasonList == None or seasonList == []): return seasonList
         except:
             pass
 
         try:
+            self.list = []
             seasonList = self.tvdb_list(url, image, year, imdb, tvdb, genre, plot, show, show_alt)
             if not (seasonList == None or seasonList == []): return seasonList
         except:
             pass
 
         try:
+            self.list = []
             seasonList = self.imdb_list(url, image, year, imdb, '0', genre, plot, show, show)
             if not (seasonList == None or seasonList == []): return seasonList
         except:
@@ -2059,7 +2086,7 @@ class seasons:
                 date = common.parseDOM(result, "Season", attrs = { "no": season })[0]
                 date = common.parseDOM(date, "airdate")[0]
                 date = date.encode('utf-8')
-                if date == '': raise Exception()
+                if date == '' or '-00' in date: raise Exception()
                 if int(re.sub('[^0-9]', '', str(date)) + '0000') + 10500 > int((datetime.datetime.utcnow() - datetime.timedelta(hours = 5)).strftime("%Y%m%d%H%M")): raise Exception()
 
                 num = '%01d' % int(season)
@@ -2068,7 +2095,7 @@ class seasons:
                 name = '%s %s' % ('Season', num)
                 name = name.encode('utf-8')
 
-                self.list.append({'name': name, 'url': tvrageUrl, 'image': image, 'year': year, 'imdb': imdb, 'tvdb': tvdb, 'genre': genre, 'plot': plot, 'show': show, 'show_alt': show_alt, 'season': num, 'sort': '%10d' % int(num)})
+                self.list.append({'name': name, 'url': tvrageUrl, 'image': image, 'year': year, 'imdb': imdb, 'tvdb': tvdb, 'genre': genre, 'plot': plot, 'show': show, 'show_alt': show_alt, 'season': num, 'sort': '%10d' % int(num), 'idx_data': result})
             except:
                 pass
 
@@ -2091,7 +2118,7 @@ class seasons:
                 date = common.parseDOM(season, "FirstAired")[0]
                 date = common.replaceHTMLCodes(date)
                 date = date.encode('utf-8')
-                if date == '': raise Exception()
+                if date == '' or '-00' in date: raise Exception()
                 if int(re.sub('[^0-9]', '', str(date)) + '0000') + 10500 > int((datetime.datetime.utcnow() - datetime.timedelta(hours = 5)).strftime("%Y%m%d%H%M")): raise Exception()
 
                 num = common.parseDOM(season, "SeasonNumber")[0]
@@ -2101,7 +2128,7 @@ class seasons:
                 name = '%s %s' % ('Season', num)
                 name = name.encode('utf-8')
 
-                self.list.append({'name': name, 'url': link().tvdb_base, 'image': image, 'year': year, 'imdb': imdb, 'tvdb': tvdb, 'genre': genre, 'plot': plot, 'show': show, 'show_alt': show_alt, 'season': num, 'sort': '%10d' % int(num)})
+                self.list.append({'name': name, 'url': link().tvdb_base, 'image': image, 'year': year, 'imdb': imdb, 'tvdb': tvdb, 'genre': genre, 'plot': plot, 'show': show, 'show_alt': show_alt, 'season': num, 'sort': '%10d' % int(num), 'idx_data': result})
             except:
                 pass
 
@@ -2117,6 +2144,7 @@ class seasons:
             seasons = common.parseDOM(result, "select", attrs = { "id": "bySeason" })[0]
             seasons = common.parseDOM(seasons, "option", ret="value")
             seasons = [i for i in seasons if not i == '0']
+            seasons = [i for i in seasons if i.isdigit()]
         except:
             return
 
@@ -2140,7 +2168,7 @@ class seasons:
                     date = '%04d-%02d-%02d' % (int(date[2]), int(date[1]), int(date[0]))
                     if int(re.sub('[^0-9]', '', str(date)) + '0000') + 10500 > int((datetime.datetime.utcnow() - datetime.timedelta(hours = 5)).strftime("%Y%m%d%H%M")): raise Exception()
 
-                self.list.append({'name': name, 'url': url, 'image': image, 'year': year, 'imdb': imdb, 'tvdb': tvdb, 'genre': genre, 'plot': plot, 'show': show, 'show_alt': show_alt, 'season': num, 'sort': '%10d' % int(num)})
+                self.list.append({'name': name, 'url': url, 'image': image, 'year': year, 'imdb': imdb, 'tvdb': tvdb, 'genre': genre, 'plot': plot, 'show': show, 'show_alt': show_alt, 'season': num, 'sort': '%10d' % int(num), 'idx_data': ''})
             except:
                 pass
 
@@ -2151,13 +2179,13 @@ class episodes:
     def __init__(self):
         self.list = []
 
-    def get(self, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx=True):
+    def get(self, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx_data='', idx=True):
         if idx == True:
-            #self.list = self.get_list(name, url, image, year, imdb, tvdb, genre, plot, show, show_alt)
-            self.list = cache(self.get_list, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt)
+            #self.list = self.get_list(name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx_data)
+            self.list = cache(self.get_list, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx_data)
             index().episodeList(self.list)
         else:
-            self.list = self.get_list(name, url, image, year, imdb, tvdb, genre, plot, show, show_alt)
+            self.list = self.get_list(name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx_data)
             return self.list
 
     def calendar(self, url):
@@ -2165,21 +2193,24 @@ class episodes:
         self.list = cache2(self.trakt_list, url)
         index().episodeList(self.list)
 
-    def get_list(self, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt):
+
+    def get_list(self, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx_data):
         if url.startswith(link().tvrage_base):
-            episodeList = self.tvrage_list(name, url, image, year, imdb, tvdb, genre, plot, show, show_alt)
+            episodeList = self.tvrage_list(name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx_data)
         elif url == link().tvdb_base:
-            episodeList = self.tvdb_list(name, url, image, year, imdb, tvdb, genre, plot, show, show_alt)
+            episodeList = self.tvdb_list(name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx_data)
         else:
-            episodeList = self.imdb_list(name, url, image, year, imdb, tvdb, genre, plot, show, show_alt)
+            episodeList = self.imdb_list(name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx_data)
         return episodeList
 
-    def tvrage_list(self, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt):
+    def tvrage_list(self, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx_data):
         try:
             season = re.sub('[^0-9]', '', name)
             season = season.encode('utf-8')
 
-            result = getUrl(url).result
+            if not idx_data == '': result = idx_data
+            else: result = getUrl(url).result
+
             episodes = common.parseDOM(result, "Season", attrs = { "no": season })[0]
             episodes = common.parseDOM(episodes, "episode")
             episodes = [i for i in episodes if not common.parseDOM(i, "seasonnum")[0] == '00']
@@ -2192,7 +2223,7 @@ class episodes:
                 date = common.parseDOM(episode, "airdate")[0]
                 date = common.replaceHTMLCodes(date)
                 date = date.encode('utf-8')
-                if date == '': raise Exception()
+                if date == '' or '-00' in date: raise Exception()
                 if int(re.sub('[^0-9]', '', str(date)) + '0000') + 10500 > int((datetime.datetime.utcnow() - datetime.timedelta(hours = 5)).strftime("%Y%m%d%H%M")): raise Exception()
 
                 title = common.parseDOM(episode, "title")[0]
@@ -2219,13 +2250,14 @@ class episodes:
         self.list = sorted(self.list, key=itemgetter('sort'))
         return self.list
 
-    def tvdb_list(self, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt):
+    def tvdb_list(self, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx_data):
         try:
             season = re.sub('[^0-9]', '', name)
             season = season.encode('utf-8')
 
             tvdbUrl = link().tvdb_episodes % (link().tvdb_key, tvdb)
-            result = getUrl(tvdbUrl).result
+            if not idx_data == '': result = idx_data
+            else: result = getUrl(tvdbUrl).result
 
             episodes = common.parseDOM(result, "Episode")
             episodes = [i for i in episodes if '%01d' % int(common.parseDOM(i, "SeasonNumber")[0]) == season]
@@ -2238,7 +2270,7 @@ class episodes:
                 date = common.parseDOM(episode, "FirstAired")[0]
                 date = common.replaceHTMLCodes(date)
                 date = date.encode('utf-8')
-                if date == '': raise Exception()
+                if date == '' or '-00' in date: raise Exception()
                 if int(re.sub('[^0-9]', '', str(date)) + '0000') + 10500 > int((datetime.datetime.utcnow() - datetime.timedelta(hours = 5)).strftime("%Y%m%d%H%M")): raise Exception()
 
                 title = common.parseDOM(episode, "EpisodeName")[0]
@@ -2271,7 +2303,7 @@ class episodes:
         self.list = sorted(self.list, key=itemgetter('sort'))
         return self.list
 
-    def imdb_list(self, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt):
+    def imdb_list(self, name, url, image, year, imdb, tvdb, genre, plot, show, show_alt, idx_data):
         try:
             season = re.sub('[^0-9]', '', name)
             season = season.encode('utf-8')
@@ -2415,7 +2447,9 @@ class resolver:
             if self.sources == []: raise Exception()
 
             autoplay = getSetting("autoplay")
-            if not xbmc.getInfoLabel('Container.FolderPath').startswith(sys.argv[0]):
+            if index().getProperty('PseudoTVRunning') == 'True':
+                autoplay = 'true'
+            elif not xbmc.getInfoLabel('Container.FolderPath').startswith(sys.argv[0]):
                 autoplay = getSetting("autoplay_library")
 
             if url == 'play://':
@@ -2436,7 +2470,8 @@ class resolver:
             player().run(name, url, imdb)
             return url
         except:
-            index().infoDialog(language(30318).encode("utf-8"))
+            if not index().getProperty('PseudoTVRunning') == 'True':
+                index().infoDialog(language(30318).encode("utf-8"))
             return
 
     def sources_get(self, name, title, imdb, tvdb, year, season, episode, show, show_alt, hostDict):
@@ -2569,16 +2604,30 @@ class resolver:
             return
 
     def sources_direct(self):
+        u = None
+
         for i in self.sources:
             try:
                 if i['provider'] == 'Icefilms' and i['quality'] == 'HD': raise Exception()
                 url = self.sources_resolve(i['url'], i['provider'])
                 xbmc.sleep(1000)
                 if url is None: raise Exception()
+                if u is None: u == url
+
+                request = urllib2.Request(url.rsplit('|', 1)[0])
+                request.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:6.0) Gecko/20100101 Firefox/6.0')
+                request.add_header('Cookie', 'video=true')
+                response = urllib2.urlopen(request, timeout=20)
+                chunk = response.read(16 * 1024)
+                response.close()
+                if 'text/html' in str(response.info()["Content-Type"]): raise Exception()
+
                 self.selectedSource = i['source']
                 return url
             except:
                 pass
+
+        return u
 
     def sources_dict(self):
         self.hostDict = [
@@ -2738,8 +2787,8 @@ class primewire:
         self.base_link = 'http://www.primewire.ag'
         self.key_link = 'http://www.primewire.ag/index.php?search'
         self.search_link = 'http://www.primewire.ag/index.php?search_keywords=%s&key=%s&search_section=2'
-        self.proxy_base_link = 'http://9proxy.in'
-        self.proxy_link = 'http://9proxy.in/b.php?u=%s&b=12'
+        self.proxy_base_link = 'http://proxy.cyberunlocker.com'
+        self.proxy_link = 'http://proxy.cyberunlocker.com/browse.php?u=%s'
 
     def get(self, name, title, imdb, tvdb, year, season, episode, show, show_alt, hostDict):
         try:
@@ -2756,23 +2805,38 @@ class primewire:
                 query = self.search_link % (urllib.quote_plus(re.sub('\'', '', show)), key)
                 query = self.proxy_link % urllib.quote_plus(urllib.unquote_plus(query))
 
+
             result = getUrl(query, referer=query).result
             result = result.decode('iso-8859-1').encode('utf-8')
             result = common.parseDOM(result, "div", attrs = { "class": "index_item.+?" })
+            result = [i for i in result if any(x in re.compile('title="Watch (.+?)"').findall(i)[0] for x in ['(%s)' % str(year), '(%s)' % str(int(year)+1), '(%s)' % str(int(year)-1)])]
+            result = uniqueList(result).list
 
-            match = [i for i in result if any(x == self.cleantitle(re.compile('title="Watch (.+?)[(]\d{4}[)]"').findall(i)[0].strip()) for x in [self.cleantitle(show), self.cleantitle(show_alt)])]
-            match2 = [i for i in match if any(x in re.compile('title="Watch (.+?)"').findall(i)[0] for x in ['(%s)' % str(year), '(%s)' % str(int(year)+1), '(%s)' % str(int(year)-1)])][0]
-            url = common.parseDOM(match2, "a", ret="href")[0]
-            if url.startswith('/b.php?u='):
-                url = url.replace('%2Fwatch-','%2Ftv-')
-                url = url.replace('&amp;b=', '%2F' + 'season-%01d-episode-%01d&b=' % (int(season), int(episode)))
-                url = '%s%s' % (self.proxy_base_link, url)
-            else:
+            match = [common.parseDOM(i, "a", ret="href")[0] for i in result]
+            if match == []: return
+            for i in match[:5]:
+                try:
+                    if not i.startswith('http://'): i = '%s%s' % (self.base_link, i)
+                    result = getUrl(i, referer=i).result
+                    if any(x in self.cleantitle(result) for x in [str('>' + self.cleantitle(show) + '(%s)' % str(year) + '<'), str('>' + self.cleantitle(show_alt) + '(%s)' % str(year) + '<')]):
+                        match2 = i
+                    if any(x in self.cleantitle(result) for x in [str('>' + self.cleantitle(show) + '<'), str('>' + self.cleantitle(show_alt) + '<')]):
+                        match2 = i
+                    if str('tt' + imdb) in result:
+                        match2 = i
+                        break
+                except:
+                    pass
+
+            if match2.startswith(self.proxy_base_link):
+                url = match2.replace(self.proxy_link % '','')
+                url = urllib.unquote_plus(url)
                 url = url.replace('/watch-','/tv-')
                 url += '/season-%01d-episode-%01d' % (int(season), int(episode))
-                url = '%s%s' % (self.base_link, url)
-            url = common.replaceHTMLCodes(url)
-            url = url.encode('utf-8')
+                url = self.proxy_link % urllib.quote_plus(urllib.quote_plus(url))
+            else:
+                url = match2.replace('/watch-','/tv-')
+                url += '/season-%01d-episode-%01d' % (int(season), int(episode))
 
             result = getUrl(url, referer=url).result
             result = result.decode('iso-8859-1').encode('utf-8')
@@ -2781,8 +2845,8 @@ class primewire:
             for i in links:
                 try:
                     host = common.parseDOM(i, "a", ret="href", attrs = { "class": ".+?rater" })[0]
-                    host = urllib.unquote_plus(host.split('/b.php?u=', 1)[-1].split('&amp;', 1)[0])
                     host = re.compile('domain=(.+?)[.]').findall(host)[0]
+                    host = urllib.unquote_plus(host)
                     host = [x for x in hostDict if host.lower() == x.lower()][0]
                     host = host.encode('utf-8')
 
@@ -2792,8 +2856,12 @@ class primewire:
                     quality = quality.encode('utf-8')
 
                     url = common.parseDOM(i, "a", ret="href")[0]
-                    if url.startswith('/b.php?u='): url = '%s%s' % (self.proxy_base_link, url)
-                    else: url = '%s%s' % (self.base_link, url)
+                    if url.startswith(self.proxy_base_link):
+                        url = url.replace(self.proxy_link % '','')
+                        url = urllib.unquote_plus(url)
+                        url = self.proxy_link % urllib.quote_plus(urllib.quote_plus(url))
+                    else:
+                        url = '%s%s' % (self.base_link, url)
                     url = common.replaceHTMLCodes(url)
                     url = url.encode('utf-8')
 
@@ -2809,7 +2877,7 @@ class primewire:
 
     def resolve(self, url):
         try:
-            result = getUrl(url, referer=url).result
+            result = getUrl(url, referer=self.proxy_base_link).result
             url = common.parseDOM(result, "noframes")[0]
             url = common.replaceHTMLCodes(url)
             url = url.encode('utf-8')

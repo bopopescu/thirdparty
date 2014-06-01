@@ -37,9 +37,10 @@
 	<string id="30081">הרשמות תיובאנה לספרייה אם תיקייה זו מתווספת למקורות מדיה.</string>
 	<string id="30082">פרקים האחרונים זמינים בתוסף גם אם אין לך.</string>
 	<string id="30083">תיקית טלויזיה</string>
-	<string id="30084">תעדכן אוטומטית הרשמות</string>
-	<string id="30085">מרווחי עדכונים</string>
-	<string id="30086">ספריית עדכון לאחר רישום עדכונים</string>
+	<string id="30084">יבוא האוטומטי של אוסף Trakt</string>
+	<string id="30085">תעדכן אוטומטית הרשמות</string>
+	<string id="30086">מרווחי עדכונים</string>
+	<string id="30087">ספריית עדכון לאחר רישום עדכונים</string>
 	<string id="30100">חשבונות</string>
 	<string id="30101">משתמש</string>
 	<string id="30102">ססמא</string>
@@ -84,15 +85,12 @@
 	<string id="30344">תרצה להוריד שוב?</string>
 	<string id="30345">הורדת הוידאו הזה בתהליך כרגע.</string>
 	<string id="30346">תרצה לבטל את ההורדה?</string>
-	<string id="30347">עושה רושם שתכנית הטלויזיה הזו הסתיימה כבר.</string>
-	<string id="30348">אתה בכל זאת מעונין להוסיף?</string>
-	<string id="30349">עושה רושם שתכנית הטלויזיה הזו הסתיימה כבר.</string>
-	<string id="30350">האם תרצה להסירה?</string>
-	<string id="30351">תכנית הטלויזה הוספה לתיקיה.</string>
-	<string id="30352">האם תרצה להסירה מהתיקיה?</string>
-	<string id="30353">להמשיך מ</string>
-	<string id="30354">מהנקודה שנעצר</string>
-	<string id="30355">התחל מהתחלה</string>
+	<string id="30347">סרט כבר בספרייה.</string>
+	<string id="30348">תכנית טלוויזיה כבר בספרייה.</string>
+	<string id="30349">אתה בכל זאת מעונין להוסיף?</string>
+	<string id="30350">להמשיך מ</string>
+	<string id="30351">מהנקודה שנעצר</string>
+	<string id="30352">התחל מהתחלה</string>
 	<!-- Misc -->
 	<string id="30361">עמוד הבא</string>
 	<string id="30362">חיפוש</string>
