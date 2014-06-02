@@ -1,4 +1,24 @@
 ------------------------
+GOtv v2.4.0 (27-May-14)
+------------------------
+
+- Added Clickplay source.
+- Tweaked Putlocker TV source.
+- Tweaked VKBox source.
+- Tweaked iStreamHD source.
+- Tweaked Simplymovies source.
+- Code cosmetics.
+
+
+------------------------
+GOtv v2.3.1 (26-May-14)
+------------------------
+
+- PseudoTV Live: Fixed issue with subtitles.
+- Code cosmetics.
+
+
+------------------------
 GOtv v2.3.0 (25-May-14)
 ------------------------
 

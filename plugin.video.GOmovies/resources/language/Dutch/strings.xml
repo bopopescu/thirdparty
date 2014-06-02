@@ -36,6 +36,8 @@
 	<string id="30080">Bibliotheek</string>
 	<string id="30081">Vergeet deze bron niet toe te voegen aan je bibliotheek.</string>
 	<string id="30082">Film map</string>
+	<string id="30083">Automatische import van Trakt collectie</string>
+	<string id="30084">Update interval</string>
 	<string id="30100">Accounts</string>
 	<string id="30101">Gebruikersnaam</string>
 	<string id="30102">Wachtwoord</string>
@@ -80,15 +82,12 @@
 	<string id="30344">Wil je die opnieuw downloaden?</string>
 	<string id="30345">Het downloaden van deze video is al bezig.</string>
 	<string id="30346">Wil je dat annuleren?</string>
-	<string id="30347">Deze TV Serie lijkt afgelopen te zijn.</string>
-	<string id="30348">Wil je deze alsnog toevoegen?</string>
-	<string id="30349">Deze TV Serie lijkt afgelopen te zijn.</string>
-	<string id="30350">Weet je zeker dat je deze wilt verwijderen?</string>
-	<string id="30351">De TV Serie blijft behouden in je bibliotheek.</string>
-	<string id="30352">Wil je deze verwijderen uit je bibliotheek?</string>
-	<string id="30353">Hervatten vanaf</string>
-	<string id="30354">Hervatten</string>
-	<string id="30355">Starten vanaf begin</string>
+	<string id="30347">Film al in de bibliotheek.</string>
+	<string id="30348">TV Serie al in de bibliotheek.</string>
+	<string id="30349">Wil je deze alsnog toevoegen?</string>
+	<string id="30350">Hervatten vanaf</string>
+	<string id="30351">Hervatten</string>
+	<string id="30352">Starten vanaf begin</string>
 	<!-- Misc -->
 	<string id="30361">Volgende pagina</string>
 	<string id="30362">Zoeken</string>
@@ -120,7 +119,7 @@
 	<string id="30423">Abonnement toevoegen</string>
 	<string id="30424">Abonnement annuleren</string>
 	<string id="30425">Abonnementen updaten</string>
-	<string id="30426">Abonnementen opschonen</string>
+	<string id="30426">Bibliotheek updaten</string>
 	<string id="30427">Globale layout vastzetten</string>
 	<string id="30428">Speelfilms layout vastzetten</string>
 	<string id="30429">TV Series layout vastzetten</string>

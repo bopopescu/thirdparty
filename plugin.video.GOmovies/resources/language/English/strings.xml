@@ -36,6 +36,8 @@
 	<string id="30080">Library</string>
 	<string id="30081">Don't forget to add this folder to media sources.</string>
 	<string id="30082">Movies Folder</string>
+	<string id="30083">Automatic Import of Trakt collection</string>
+	<string id="30084">Update Interval</string>
 	<string id="30100">Accounts</string>
 	<string id="30101">User</string>
 	<string id="30102">Password</string>
@@ -80,15 +82,12 @@
 	<string id="30344">Do you want to download it again?</string>
 	<string id="30345">The download of this video is in progress.</string>
 	<string id="30346">Do you want to cancel it?</string>
-	<string id="30347">This TV Show seems to be ended.</string>
-	<string id="30348">Do you really want to add it?</string>
-	<string id="30349">This TV Show seems to be ended.</string>
-	<string id="30350">Do you really want to remove it?</string>
-	<string id="30351">This TV Show will remain to library.</string>
-	<string id="30352">Do you want to remove it from library?</string>
-	<string id="30353">Resume from</string>
-	<string id="30354">Resume</string>
-	<string id="30355">Start from beginning</string>
+	<string id="30347">Movie already in library.</string>
+	<string id="30348">TV show already in library.</string>
+	<string id="30349">Do you really want to add it?</string>
+	<string id="30350">Resume from</string>
+	<string id="30351">Resume</string>
+	<string id="30352">Start from beginning</string>
 	<!-- Misc -->
 	<string id="30361">Next Page</string>
 	<string id="30362">Search</string>
@@ -120,7 +119,7 @@
 	<string id="30423">Add Subscription</string>
 	<string id="30424">Cancel Subscription</string>
 	<string id="30425">Update Subscriptions</string>
-	<string id="30426">Clean Subscriptions</string>
+	<string id="30426">Update Library</string>
 	<string id="30427">Set Global view</string>
 	<string id="30428">Set Movies view</string>
 	<string id="30429">Set TV Shows view</string>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="30000">
-		<setting id="autoplay" type="bool" label="30001" default="true"/>
-		<setting id="autoplay_library" type="bool" label="30002" default="true"/>
+		<setting id="autoplay" type="bool" label="30001" default="false"/>
+		<setting id="autoplay_library" type="bool" label="30002" default="false"/>
 		<setting id="resume_playback" type="bool" label="30012" default="true"/>
 		<setting id="playback_info" type="bool" label="30011" default="false"/>
 		<setting id="quality" type="bool" label="30003" default="true"/>
@@ -19,12 +19,13 @@
 
 
 	<category label="30051">
-		<setting id="hosthd1" type="labelenum" label="30031" values="-|VK|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="VK"/>
-		<setting id="hosthd2" type="labelenum" label="30032" values="-|VK|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="Movreel"/>
-		<setting id="hosthd3" type="labelenum" label="30033" values="-|VK|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="Billionuploads"/>
-		<setting id="hosthd4" type="labelenum" label="30034" values="-|VK|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="180upload"/>
-		<setting id="hosthd5" type="labelenum" label="30035" values="-|VK|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="Hugefiles"/>
-		<setting id="hosthd6" type="labelenum" label="30036" values="-|VK|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="Noobroom"/>
+		<setting id="hosthd1" type="labelenum" label="30031" values="-|VK|Firedrive|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="VK"/>
+		<setting id="hosthd2" type="labelenum" label="30032" values="-|VK|Firedrive|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="Firedrive"/>
+		<setting id="hosthd3" type="labelenum" label="30033" values="-|VK|Firedrive|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="Movreel"/>
+		<setting id="hosthd4" type="labelenum" label="30034" values="-|VK|Firedrive|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="Billionuploads"/>
+		<setting id="hosthd5" type="labelenum" label="30035" values="-|VK|Firedrive|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="180upload"/>
+		<setting id="hosthd6" type="labelenum" label="30036" values="-|VK|Firedrive|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="Hugefiles"/>
+		<setting id="hosthd7" type="labelenum" label="30037" values="-|VK|Firedrive|Movreel|Billionuploads|180upload|Hugefiles|Noobroom" default="Noobroom"/>
 	</category>
 
 	<category label="30052">
@@ -52,6 +53,7 @@
 		<setting id="tvonline" type="bool" label="TVonline" default="true"/>
 		<setting id="ororotv" type="bool" label="OroroTV" default="true"/>
 		<setting id="putlockertv" type="bool" label="PutlockerTV" default="true"/>
+		<setting id="clickplay" type="bool" label="Clickplay" default="true"/>
 		<setting id="vkbox" type="bool" label="VKBox" default="true"/>
 		<setting id="istreamhd" type="bool" label="iStreamHD" default="true"/>
 		<setting id="simplymovies" type="bool" label="Simplymovies" default="true"/>

@@ -1,4 +1,29 @@
 ------------------------
+GOmovies v2.4.0 (31-May-14)
+------------------------
+
+- Re-work of Primewire source.
+- Re-work of Glowgaze source.
+- Re-work of Movietube source.
+- Tweaked VKBox source.
+- Tweaked iStreamHD source.
+- Tweaked Simplymovies source.
+- Tweaked MoviesHD source.
+- Tweaked Moviestorm source.
+- Re-work of library integration.
+- Added option for automatic import of Trakt collection.
+- NOTE: First time import will have to be made from main context menu (Update Library option).
+- NOTE: New movies from Trakt collection will be imported after x hours (based on update interval).
+- NOTE: Library import will skip movies already in library.
+- Tweaked detection of non-working streams in autoplay.
+- PseudoTV Live: Autoplay is now always enabled.
+- PseudoTV Live: All dialogs are now disabled (Resume, Playback info etc).
+- PseudoTV Live: All streams won't be marked as watched.
+- Tweaked context menus.
+- Code cosmetics.
+
+
+------------------------
 GOmovies v2.2.1 (18-May-14)
 ------------------------
 

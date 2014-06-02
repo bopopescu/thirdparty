@@ -36,6 +36,8 @@
 	<string id="30080">Médiathèque</string>
 	<string id="30081">N'oubliez pas d'ajouter ce dossier à vos sources de média.</string>
 	<string id="30082">Dossier des films</string>
+	<string id="30083">Importation automatique de collection Trakt</string>
+	<string id="30084">Intervalle de la mise à jour des films</string>
 	<string id="30100">Comptes</string>
 	<string id="30101">User</string>
 	<string id="30102">Password</string>
@@ -80,15 +82,12 @@
 	<string id="30344">La télécharger à nouveau?</string>
 	<string id="30345">Le téléchargement de cette video est en cours.</string>
 	<string id="30346">Voulez vous l'annuler?</string>
-	<string id="30347">Cette Série TV semble être terminée.</string>
-	<string id="30348">Désirez-vous toujours la suivre?</string>
-	<string id="30349">Cette Série TV semble terminée.</string>
-	<string id="30350">Voulez-vous la retirer du suivi?</string>
-	<string id="30351">Cette Série TV est dans la Médiathèque .</string>
-	<string id="30352">Voulez-vous la retirer de la Médiathèque?</string>
-	<string id="30353">Reprendre la lecture depuis</string>
-	<string id="30354">Reprendre la lecture</string>
-	<string id="30355">Lire depuis le début</string>
+	<string id="30347">Film déjà dans la Médiathèque.</string>
+	<string id="30348">Série TV déjà dans la Médiathèque.</string>
+	<string id="30349">Désirez-vous toujours la suivre?</string>
+	<string id="30350">Reprendre la lecture depuis</string>
+	<string id="30351">Reprendre la lecture</string>
+	<string id="30352">Lire depuis le début</string>
 	<!-- Misc -->
 	<string id="30361">Page Suivante</string>
 	<string id="30362">Recherche</string>
@@ -120,7 +119,7 @@
 	<string id="30423">Suivre cette Série TV</string>
 	<string id="30424">Annuler le Suivi</string>
 	<string id="30425">Mettre à jour les Séries TV</string>
-	<string id="30426">Nettoyer les Séries TV</string>
+	<string id="30426">Actualiser à jour les Films</string>
 	<string id="30427">Vue Globale</string>
 	<string id="30428">Vue pour les Films</string>
 	<string id="30429">Vue pour les Séries TV</string>

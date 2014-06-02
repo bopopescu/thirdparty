@@ -36,6 +36,8 @@
 	<string id="30080">ספרייה</string>
 	<string id="30081">אל תשכח להוסיף תיקייה זו לרשימת המקורות.</string>
 	<string id="30082">תיקיית סרטים</string>
+	<string id="30083">יבוא האוטומטי של אוסף Trakt</string>
+	<string id="30084">עדכון מרווח</string>
 	<string id="30100">חשבונות</string>
 	<string id="30101">משתמש</string>
 	<string id="30102">ססמא</string>
@@ -80,15 +82,12 @@
 	<string id="30344">תרצה להוריד שוב?</string>
 	<string id="30345">הורדת הוידאו הזה בתהליך כרגע.</string>
 	<string id="30346">תרצה לבטל את ההורדה?</string>
-	<string id="30347">עושה רושם שתכנית הטלויזיה הזו הסתיימה כבר.</string>
-	<string id="30348">אתה בכל זאת מעונין להוסיף?</string>
-	<string id="30349">עושה רושם שתכנית הטלויזיה הזו הסתיימה כבר.</string>
-	<string id="30350">האם תרצה להסירה?</string>
-	<string id="30351">תכנית הטלויזה הוספה לתיקיה.</string>
-	<string id="30352">האם תרצה להסירה מהתיקיה?</string>
-	<string id="30353">להמשיך מ</string>
-	<string id="30354">מהנקודה שנעצר</string>
-	<string id="30355">התחל מהתחלה</string>
+	<string id="30347">סרט כבר בספרייה.</string>
+	<string id="30348">תכנית טלוויזיה כבר בספרייה.</string>
+	<string id="30349">אתה בכל זאת מעונין להוסיף?</string>
+	<string id="30350">להמשיך מ</string>
+	<string id="30351">מהנקודה שנעצר</string>
+	<string id="30352">התחל מהתחלה</string>
 	<!-- Misc -->
 	<string id="30361">עמוד הבא</string>
 	<string id="30362">חיפוש</string>
@@ -120,7 +119,7 @@
 	<string id="30423">הוסף הרשמה</string>
 	<string id="30424">בטל הרשמה</string>
 	<string id="30425">עדכן הרשמה</string>
-	<string id="30426">נקה הרשמה</string>
+	<string id="30426">עדכן ספריה</string>
 	<string id="30427">הגדר מבט גלובלי</string>
 	<string id="30428">הגדר צפיה בסרטים</string>
 	<string id="30429">הגדר צפיה בתכניות טלויזיה</string>

@@ -109,8 +109,10 @@ class main:
         elif action == 'metadata_movies':           contextMenu().metadata('movie', imdb, '', '')
         elif action == 'metadata_movies2':          contextMenu().metadata('movie', imdb, '', '')
         elif action == 'playcount_movies':          contextMenu().playcount('movie', imdb, '', '')
+        elif action == 'library_add':               contextMenu().library_add(name, title, imdb, year, url)
         elif action == 'library_batch':             contextMenu().library_batch(url)
-        elif action == 'library':                   contextMenu().library(name, title, imdb, year, url)
+        elif action == 'library_update':            contextMenu().library_update()
+        elif action == 'library_service':           contextMenu().library_update(silent=True)
         elif action == 'download':                  contextMenu().download(name, title, imdb, year, url)
         elif action == 'sources':                   contextMenu().sources(name, title, imdb, year, url)
         elif action == 'autoplay':                  contextMenu().autoplay(name, title, imdb, year, url)
@@ -199,13 +201,14 @@ class Thread(threading.Thread):
 class player(xbmc.Player):
     def __init__ (self):
         self.folderPath = xbmc.getInfoLabel('Container.FolderPath')
+        self.PseudoTVRunning = index().getProperty('PseudoTVRunning')
         self.loadingStarting = time.time()
         xbmc.Player.__init__(self)
 
     def run(self, name, url, imdb='0'):
         self.video_info(name, imdb)
 
-        if self.folderPath.startswith(sys.argv[0]):
+        if self.folderPath.startswith(sys.argv[0]) or self.PseudoTVRunning == 'True':
             item = xbmcgui.ListItem(path=url)
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
         else:
@@ -308,12 +311,14 @@ class player(xbmc.Player):
         minutes, seconds = divmod(offset, 60)
         hours, minutes = divmod(minutes, 60)
         offset_time = '%02d:%02d:%02d' % (hours, minutes, seconds)
-        yes = index().yesnoDialog('%s %s' % (language(30353).encode("utf-8"), offset_time), '', self.name, language(30354).encode("utf-8"), language(30355).encode("utf-8"))
+        yes = index().yesnoDialog('%s %s' % (language(30350).encode("utf-8"), offset_time), '', self.name, language(30351).encode("utf-8"), language(30352).encode("utf-8"))
         if yes: self.seekTime(offset)
 
     def onPlayBackStarted(self):
         try: self.setSubtitles(self.subtitle)
         except: pass
+
+        if self.PseudoTVRunning == 'True': return
 
         if getSetting("playback_info") == 'true':
             elapsedTime = '%s %.2f seconds' % (language(30319).encode("utf-8"), (time.time() - self.loadingStarting))     
@@ -324,11 +329,13 @@ class player(xbmc.Player):
             self.resume_playback()
 
     def onPlayBackEnded(self):
+        if self.PseudoTVRunning == 'True': return
         self.change_watched()
         self.offset_delete()
         self.container_refresh()
 
     def onPlayBackStopped(self):
+        if self.PseudoTVRunning == 'True': return
         if self.currentTime / self.totalTime >= .9:
             self.change_watched()
         self.offset_delete()
@@ -474,6 +481,7 @@ class index:
                 u = '%s?action=%s' % (sys.argv[0], action)
 
                 cm = []
+                cm.append((language(30426).encode("utf-8"), 'RunPlugin(%s?action=library_update)' % (sys.argv[0])))
                 if action == 'movies_added' or action == 'movies_trending':
                     cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library_batch&url=%s)' % (sys.argv[0], action)))
 
@@ -636,7 +644,7 @@ class index:
                     if not getSetting("fav_sort") == '2': cm.append((language(30416).encode("utf-8"), 'RunPlugin(%s?action=trailer&name=%s&url=%s)' % (sys.argv[0], sysname, trailer)))
                     if getmeta == 'true': cm.append((language(30415).encode("utf-8"), 'RunPlugin(%s?action=metadata_movies&imdb=%s)' % (sys.argv[0], metaimdb)))
                     if getmeta == 'true': cm.append((playcountMenu, 'RunPlugin(%s?action=playcount_movies&imdb=%s)' % (sys.argv[0], metaimdb)))
-                    cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library&name=%s&title=%s&imdb=%s&year=%s&url=%s)' % (sys.argv[0], sysname, systitle, sysimdb, sysyear, sysurl)))
+                    cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library_add&name=%s&title=%s&imdb=%s&year=%s&url=%s)' % (sys.argv[0], sysname, systitle, sysimdb, sysyear, sysurl)))
                     cm.append((language(30428).encode("utf-8"), 'RunPlugin(%s?action=view_movies)' % (sys.argv[0])))
                     if getSetting("fav_sort") == '2': cm.append((language(30419).encode("utf-8"), 'RunPlugin(%s?action=favourite_moveUp&name=%s&url=%s)' % (sys.argv[0], systitle, sysurl)))
                     if getSetting("fav_sort") == '2': cm.append((language(30420).encode("utf-8"), 'RunPlugin(%s?action=favourite_moveDown&name=%s&url=%s)' % (sys.argv[0], systitle, sysurl)))
@@ -644,7 +652,7 @@ class index:
                 elif action == 'movies_search':
                     cm.append((language(30412).encode("utf-8"), 'Action(Info)'))
                     cm.append((language(30416).encode("utf-8"), 'RunPlugin(%s?action=trailer&name=%s&url=%s)' % (sys.argv[0], sysname, trailer)))
-                    cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library&name=%s&title=%s&imdb=%s&year=%s&url=%s)' % (sys.argv[0], sysname, systitle, sysimdb, sysyear, sysurl)))
+                    cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library_add&name=%s&title=%s&imdb=%s&year=%s&url=%s)' % (sys.argv[0], sysname, systitle, sysimdb, sysyear, sysurl)))
                     cm.append((language(30417).encode("utf-8"), 'RunPlugin(%s?action=favourite_from_search&name=%s&imdb=%s&url=%s&image=%s&year=%s)' % (sys.argv[0], systitle, sysimdb, sysurl, sysimage, sysyear)))
                     cm.append((language(30428).encode("utf-8"), 'RunPlugin(%s?action=view_movies)' % (sys.argv[0])))
                     cm.append((language(30409).encode("utf-8"), 'RunPlugin(%s?action=settings_open)' % (sys.argv[0])))
@@ -654,7 +662,7 @@ class index:
                     cm.append((language(30416).encode("utf-8"), 'RunPlugin(%s?action=trailer&name=%s&url=%s)' % (sys.argv[0], sysname, trailer)))
                     if getmeta == 'true': cm.append((language(30415).encode("utf-8"), 'RunPlugin(%s?action=metadata_movies2&imdb=%s)' % (sys.argv[0], metaimdb)))
                     if getmeta == 'true': cm.append((playcountMenu, 'RunPlugin(%s?action=playcount_movies&imdb=%s)' % (sys.argv[0], metaimdb)))
-                    cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library&name=%s&title=%s&imdb=%s&year=%s&url=%s)' % (sys.argv[0], sysname, systitle, sysimdb, sysyear, sysurl)))
+                    cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library_add&name=%s&title=%s&imdb=%s&year=%s&url=%s)' % (sys.argv[0], sysname, systitle, sysimdb, sysyear, sysurl)))
                     if not '"%s"' % url in favRead: cm.append((language(30417).encode("utf-8"), 'RunPlugin(%s?action=favourite_add&name=%s&imdb=%s&url=%s&image=%s&year=%s)' % (sys.argv[0], systitle, sysimdb, sysurl, sysimage, sysyear)))
                     else: cm.append((language(30418).encode("utf-8"), 'RunPlugin(%s?action=favourite_delete&name=%s&url=%s)' % (sys.argv[0], systitle, sysurl)))
                     cm.append((language(30428).encode("utf-8"), 'RunPlugin(%s?action=view_movies)' % (sys.argv[0])))
@@ -662,7 +670,7 @@ class index:
                     cm.append((language(30412).encode("utf-8"), 'Action(Info)'))
                     cm.append((language(30416).encode("utf-8"), 'RunPlugin(%s?action=trailer&name=%s&url=%s)' % (sys.argv[0], sysname, trailer)))
                     if getmeta == 'true': cm.append((language(30415).encode("utf-8"), 'RunPlugin(%s?action=metadata_movies2&imdb=%s)' % (sys.argv[0], metaimdb)))
-                    cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library&name=%s&title=%s&imdb=%s&year=%s&url=%s)' % (sys.argv[0], sysname, systitle, sysimdb, sysyear, sysurl)))
+                    cm.append((language(30422).encode("utf-8"), 'RunPlugin(%s?action=library_add&name=%s&title=%s&imdb=%s&year=%s&url=%s)' % (sys.argv[0], sysname, systitle, sysimdb, sysyear, sysurl)))
                     if not '"%s"' % url in favRead: cm.append((language(30417).encode("utf-8"), 'RunPlugin(%s?action=favourite_add&name=%s&imdb=%s&url=%s&image=%s&year=%s)' % (sys.argv[0], systitle, sysimdb, sysurl, sysimage, sysyear)))
                     else: cm.append((language(30418).encode("utf-8"), 'RunPlugin(%s?action=favourite_delete&name=%s&url=%s)' % (sys.argv[0], systitle, sysurl)))
                     cm.append((language(30428).encode("utf-8"), 'RunPlugin(%s?action=view_movies)' % (sys.argv[0])))
@@ -848,6 +856,31 @@ class contextMenu:
         except:
             return
 
+    def library_add(self, name, title, imdb, year, url, update=True, silent=False):
+        try:
+            lib = self.library(name, title, imdb, year, url, check=True)
+            if (silent == False and lib == False):
+                yes = index().yesnoDialog(language(30347).encode("utf-8"), language(30349).encode("utf-8"), name)
+                if yes:
+                    self.library(name, title, imdb, year, url)
+                else:
+                    return
+            elif lib == False:
+                return
+
+            if silent == False:
+                index().container_refresh()
+                index().infoDialog(language(30311).encode("utf-8"), name)
+            if update == True:
+                xbmc.executebuiltin('UpdateLibrary(video)')
+        except:
+            return
+
+    def library_update(self, silent=False):
+        url = link().trakt_collection % (link().trakt_key, link().trakt_user)
+        if getSetting("library_import") == 'true' and not (link().trakt_user == '' or link().trakt_password == ''):
+            self.library_batch(url, silent=silent)
+
     def library_batch(self, url, update=True, silent=False):
         if url == 'movies_added':
             movieList = movies().added(idx=False)
@@ -858,14 +891,14 @@ class contextMenu:
 
         if movieList == None: return
         for i in movieList:
-            try: self.library(i['name'], i['title'], i['imdb'], i['year'], i['url'], silent=True)
+            try: self.library(i['name'], i['title'], i['imdb'], i['year'], i['url'], check=True)
             except: pass
         if silent == False:
             index().infoDialog(language(30311).encode("utf-8"))
         if update == True:
             xbmc.executebuiltin('UpdateLibrary(video)')
 
-    def library(self, name, title, imdb, year, url, silent=False):
+    def library(self, name, title, imdb, year, url, check=False):
         try:
             library = xbmc.translatePath(getSetting("movie_library"))
             sysname, systitle, sysimdb, sysyear = urllib.quote_plus(name), urllib.quote_plus(title), urllib.quote_plus(imdb), urllib.quote_plus(year)
@@ -873,14 +906,28 @@ class contextMenu:
             enc_name = name.translate(None, '\/:*?"<>|')
             folder = os.path.join(library, enc_name)
             stream = os.path.join(folder, enc_name + '.strm')
+        except:
+            return
+
+        try:
+            if check == False: raise Exception()
+            data = xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "VideoLibrary.GetMovies", "params": {"filter":{"or": [{"field": "year", "operator": "is", "value": "%s"}, {"field": "year", "operator": "is", "value": "%s"}, {"field": "year", "operator": "is", "value": "%s"}]}, "properties" : ["imdbnumber", "file"]}, "id": 1}' % (year, str(int(year)+1), str(int(year)-1)))
+            data = unicode(data, 'utf-8', errors='ignore')
+            data = json.loads(data)
+            data = data['result']['movies']
+            data = [i for i in data if imdb in i['imdbnumber']][0]
+            if data['file'] == stream: raise Exception()
+            return False
+        except:
+            pass
+
+        try:
             xbmcvfs.mkdir(dataPath)
             xbmcvfs.mkdir(library)
             xbmcvfs.mkdir(folder)
             file = xbmcvfs.File(stream, 'w')
             file.write(str(content))
             file.close()
-            if silent == False:
-                index().infoDialog(language(30311).encode("utf-8"), name)
         except:
             return
 
@@ -1835,7 +1882,9 @@ class resolver:
             if self.sources == []: raise Exception()
 
             autoplay = getSetting("autoplay")
-            if not xbmc.getInfoLabel('Container.FolderPath').startswith(sys.argv[0]):
+            if index().getProperty('PseudoTVRunning') == 'True':
+                autoplay = 'true'
+            elif not xbmc.getInfoLabel('Container.FolderPath').startswith(sys.argv[0]):
                 autoplay = getSetting("autoplay_library")
 
             if url == 'play://':
@@ -1856,7 +1905,8 @@ class resolver:
             player().run(name, url, imdb)
             return url
         except:
-            index().infoDialog(language(30318).encode("utf-8"))
+            if not index().getProperty('PseudoTVRunning') == 'True':
+                index().infoDialog(language(30318).encode("utf-8"))
             return
 
     def sources_get(self, name, title, imdb, year, hostDict):
@@ -1929,7 +1979,7 @@ class resolver:
         [i.start() for i in threads]
         [i.join() for i in threads]
 
-        self.sources = icefilms_sources + movie25_sources + primewire_sources + vkbox_sources + istreamhd_sources + simplymovies_sources + muchmovies_sources + movieshd_sources + glowgaze_sources + movietube_sources + yify_sources + moviestorm_sources + noobroom_sources
+        self.sources = icefilms_sources + primewire_sources + movie25_sources + vkbox_sources + istreamhd_sources + simplymovies_sources + muchmovies_sources + movieshd_sources + glowgaze_sources + movietube_sources + yify_sources + moviestorm_sources + noobroom_sources
 
         return self.sources
 
@@ -2003,6 +2053,7 @@ class resolver:
             return
 
     def sources_direct(self):
+        u = None
         for i in self.sources:
             try:
                 if i['provider'] == 'Icefilms' and i['quality'] == 'HD': raise Exception()
@@ -2010,6 +2061,16 @@ class resolver:
                 if i['provider'] == 'Muchmovies': url = muchmovies().check(url)
                 xbmc.sleep(1000)
                 if url is None: raise Exception()
+                if u is None: u == url
+
+                request = urllib2.Request(url.rsplit('|', 1)[0])
+                request.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:6.0) Gecko/20100101 Firefox/6.0')
+                request.add_header('Cookie', 'video=true')
+                response = urllib2.urlopen(request, timeout=20)
+                chunk = response.read(16 * 1024)
+                response.close()
+                if 'text/html' in str(response.info()["Content-Type"]): raise Exception()
+
                 self.selectedSource = i['source']
                 return url
             except:
@@ -2168,8 +2229,8 @@ class primewire:
         self.base_link = 'http://www.primewire.ag'
         self.key_link = 'http://www.primewire.ag/index.php?search'
         self.search_link = 'http://www.primewire.ag/index.php?search_keywords=%s&key=%s&search_section=1'
-        self.proxy_base_link = 'http://9proxy.in'
-        self.proxy_link = 'http://9proxy.in/b.php?u=%s&b=12'
+        self.proxy_base_link = 'http://proxy.cyberunlocker.com'
+        self.proxy_link = 'http://proxy.cyberunlocker.com/browse.php?u=%s'
 
     def get(self, name, title, imdb, year, hostDict):
         try:
@@ -2186,17 +2247,35 @@ class primewire:
                 query = self.search_link % (urllib.quote_plus(re.sub('\'', '', title)), key)
                 query = self.proxy_link % urllib.quote_plus(urllib.unquote_plus(query))
 
+
             result = getUrl(query, referer=query).result
             result = result.decode('iso-8859-1').encode('utf-8')
             result = common.parseDOM(result, "div", attrs = { "class": "index_item.+?" })
+            result = [i for i in result if any(x in re.compile('title="Watch (.+?)"').findall(i)[0] for x in ['(%s)' % str(year), '(%s)' % str(int(year)+1), '(%s)' % str(int(year)-1)])]
+            result = uniqueList(result).list
 
-            match = [i for i in result if any(x == self.cleantitle(re.compile('title="Watch (.+?)"').findall(i)[0]) for x in [self.cleantitle(title)])]
-            match2 = [i for i in match if any(x in re.compile('title="Watch (.+?)"').findall(i)[0] for x in ['(%s)' % str(year), '(%s)' % str(int(year)+1), '(%s)' % str(int(year)-1)])][0]
-            url = common.parseDOM(match2, "a", ret="href")[0]
-            if url.startswith('/b.php?u='): url = '%s%s' % (self.proxy_base_link, url)
-            else: url = '%s%s' % (self.base_link, url)
-            url = common.replaceHTMLCodes(url)
-            url = url.encode('utf-8')
+            match = [common.parseDOM(i, "a", ret="href")[0] for i in result]
+            if match == []: return
+            for i in match[:5]:
+                try:
+                    if not i.startswith('http://'): i = '%s%s' % (self.base_link, i)
+                    result = getUrl(i, referer=i).result
+                    if any(x in self.cleantitle(result) for x in [str('>' + self.cleantitle(title) + '(%s)' % str(year) + '<')]):
+                        match2 = i
+                    if any(x in self.cleantitle(result) for x in [str('>' + self.cleantitle(title) + '<')]):
+                        match2 = i
+                    if str('tt' + imdb) in result:
+                        match2 = i
+                        break
+                except:
+                    pass
+
+            if match2.startswith(self.proxy_base_link):
+                url = match2.replace(self.proxy_link % '','')
+                url = urllib.unquote_plus(url)
+                url = self.proxy_link % urllib.quote_plus(urllib.quote_plus(url))
+            else:
+                url = match2
 
             result = getUrl(url, referer=url).result
             result = result.decode('iso-8859-1').encode('utf-8')
@@ -2205,8 +2284,8 @@ class primewire:
             for i in links:
                 try:
                     host = common.parseDOM(i, "a", ret="href", attrs = { "class": ".+?rater" })[0]
-                    host = urllib.unquote_plus(host.split('/b.php?u=', 1)[-1].split('&amp;', 1)[0])
                     host = re.compile('domain=(.+?)[.]').findall(host)[0]
+                    host = urllib.unquote_plus(host)
                     host = [x for x in hostDict if host.lower() == x.lower()][0]
                     host = host.encode('utf-8')
 
@@ -2217,8 +2296,12 @@ class primewire:
                     quality = quality.encode('utf-8')
 
                     url = common.parseDOM(i, "a", ret="href")[0]
-                    if url.startswith('/b.php?u='): url = '%s%s' % (self.proxy_base_link, url)
-                    else: url = '%s%s' % (self.base_link, url)
+                    if url.startswith(self.proxy_base_link):
+                        url = url.replace(self.proxy_link % '','')
+                        url = urllib.unquote_plus(url)
+                        url = self.proxy_link % urllib.quote_plus(urllib.quote_plus(url))
+                    else:
+                        url = '%s%s' % (self.base_link, url)
                     url = common.replaceHTMLCodes(url)
                     url = url.encode('utf-8')
 
@@ -2234,7 +2317,7 @@ class primewire:
 
     def resolve(self, url):
         try:
-            result = getUrl(url, referer=url).result
+            result = getUrl(url, referer=self.proxy_base_link).result
             url = common.parseDOM(result, "noframes")[0]
             url = common.replaceHTMLCodes(url)
             url = url.encode('utf-8')
@@ -2351,22 +2434,9 @@ class vkbox:
             num = int(match) + 537
             url = 'https://vk.com/video_ext.php?oid=%s&id=%s&hash=%s' % (str(int(param[0][0]) + num), str(int(param[0][1]) + num), param[0][2])
 
-            result = getUrl(url).result
-            try:
-                url = re.compile('url720=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                vkbox_sources.append({'source': 'VK', 'quality': 'HD', 'provider': 'VKBox', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url540=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                vkbox_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'VKBox', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url480=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                vkbox_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'VKBox', 'url': url})
-            except:
-                pass
+            import commonresolvers
+            url = commonresolvers.resolvers().vk(url)
+            for i in url: vkbox_sources.append({'source': 'VK', 'quality': i['quality'], 'provider': 'VKBox', 'url': i['url']})
         except:
             return
 
@@ -2424,22 +2494,9 @@ class istreamhd:
             url = common.replaceHTMLCodes(url)
             url = url.encode('utf-8')
 
-            result = getUrl(url).result
-            try:
-                url = re.compile('url720=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                istreamhd_sources.append({'source': 'VK', 'quality': 'HD', 'provider': 'iStreamHD', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url540=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                istreamhd_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'iStreamHD', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url480=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                istreamhd_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'iStreamHD', 'url': url})
-            except:
-                pass
+            import commonresolvers
+            url = commonresolvers.resolvers().vk(url)
+            for i in url: istreamhd_sources.append({'source': 'VK', 'quality': i['quality'], 'provider': 'iStreamHD', 'url': i['url']})
         except:
             return
 
@@ -2475,22 +2532,9 @@ class simplymovies:
             url = url.replace('http://', 'https://')
             url = url.encode('utf-8')
 
-            result = getUrl(url).result
-            try:
-                url = re.compile('url720=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                simplymovies_sources.append({'source': 'VK', 'quality': 'HD', 'provider': 'Simplymovies', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url540=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                simplymovies_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'Simplymovies', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url480=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                simplymovies_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'Simplymovies', 'url': url})
-            except:
-                pass
+            import commonresolvers
+            url = commonresolvers.resolvers().vk(url)
+            for i in url: simplymovies_sources.append({'source': 'VK', 'quality': i['quality'], 'provider': 'Simplymovies', 'url': i['url']})
         except:
             return
 
@@ -2580,12 +2624,9 @@ class movieshd:
             url = self.player_link % url
             url = url.encode('utf-8')
 
-            result = getUrl(url).result
-            url = re.compile('document.write.unescape."(.+?)"').findall(result)[0]
-            url = urllib.unquote_plus(url)
-            url = re.compile('file: "(.+?)"').findall(url)[0]
-            url = common.replaceHTMLCodes(url)
-            url = url.encode('utf-8')
+            import commonresolvers
+            url = commonresolvers.resolvers().videomega(url)
+            if url == None: return
 
             movieshd_sources.append({'source': 'MoviesHD', 'quality': 'HD', 'provider': 'MoviesHD', 'url': url})
         except:
@@ -2626,28 +2667,25 @@ class glowgaze:
             if ' 1080p ' in name or ' 720p ' in name: quality = 'HD'
             else: quality = 'SD'
 
-            result = getUrl(url).result
-            result = result.decode('iso-8859-1').encode('utf-8')
-            result = common.parseDOM(result, "div", attrs = { "class": "content" })[0]
-            result = common.parseDOM(result, "iframe", ret="src")[0]
-            result = getUrl(result, referer=self.base_link).result
+            url = getUrl(url).result
+            url = url.decode('iso-8859-1').encode('utf-8')
+            url = common.parseDOM(url, "iframe", ret="src", attrs = { "webkitallowfullscreen": ".+?" })[0]
+            url = getUrl(url, referer=self.base_link).result
+            url = common.parseDOM(url, "iframe", ret="src")[0]
+            url = getUrl(url, referer=self.base_link).result
 
-            try:
-                url = re.compile('{file:"(.+?)"').findall(result)
-                if url == []: raise Exception()
-                url = [common.replaceHTMLCodes(i) for i in url]
-                url = [i for i in url if 'videoplayback?' in i]
-                try: url = [i for i in url if not any(x in i for x in ['&itag=43&', '&itag=35&', '&itag=34&', '&itag=5&'])][-1]
-                except: url = url[-1]
+            u = re.compile('"(https://redirector.googlevideo.com/.+?)"').findall(url)
+            u += re.compile('"(http://redirector.googlevideo.com/.+?)"').findall(url)
+            u += re.compile('"(https://docs.google.com/.+?)"').findall(url)
+            u += re.compile('"(http://docs.google.com/.+?)"').findall(url)
+            url = u[-1]
+
+            if 'docs.google.com' in url:
+                import commonresolvers
+                url = commonresolvers.resolvers().googledocs(url)
+                if url == None: return
+            elif 'googlevideo.com' in url:
                 url = getUrl(url, output='geturl').result
-            except:
-                url = common.parseDOM(result, "iframe", ret="src")[0]
-                url = getUrl(url).result
-                url = re.findall('("fmt_stream_map":".+?")', url, re.I)[0]
-                url = json.loads('{' + url + '}')['fmt_stream_map']
-                url = [i.split('|')[-1] for i in url.split(',')]
-                try: url = [i for i in url if not any(x in i for x in ['&itag=43&', '&itag=35&', '&itag=34&', '&itag=5&'])][0]
-                except: url = url[0]
 
             glowgaze_sources.append({'source': 'Glowgaze', 'quality': quality, 'provider': 'Glowgaze', 'url': url})
         except:
@@ -2686,29 +2724,31 @@ class movietube:
 
             post = urllib.urlencode({'a': 'getmoviealternative', 'c': 'result', 'p': '{"KeyWord":"%s"}' % url})
             result = getUrl(self.index_link, post=post).result
-            result = re.compile('(<a.+?</a>)').findall(result)
-            result = [i for i in result if '0000000008400000' in i or '0000000008100000' in i]
-            links = [i for i in result if '>1080p<' in i]
-            links += [i for i in result if '>720p<' in i]
-            links = links[:3]
+            if not result == '':
+                result = re.compile('(<a.+?</a>)').findall(result)
+                result = [i for i in result if '0000000008400000' in i or '0000000008100000' in i]
+                u = [i for i in result if '>1080p<' in i]
+                u += [i for i in result if '>720p<' in i]
+                u = [common.parseDOM(i, "a", ret="href")[0] for i in u]
+                u = [i.split('?v=')[-1] for i in u]
+                u = u[:3]
+            else:
+                u = [url]
 
-            for i in links:
+            for i in u:
                 try:
-                    url = common.parseDOM(i, "a", ret="href")[0]
-                    url = url.split('?v=')[-1]
                     post = urllib.urlencode({'a': 'getplayerinfo', 'c': 'result', 'p': '{"KeyWord":"%s"}' % url})
-                    url = getUrl(self.index_link, post=post).result
+                    result = getUrl(self.index_link, post=post).result
 
-                    if '0000000008400000' in i:
-                        url = common.parseDOM(url, "source", ret="src", attrs = { "type": "video/mp4" })[0]
+                    try: url = common.parseDOM(result, "source", ret="src", attrs = { "type": "video/mp4" })[0]
+                    except: url = common.parseDOM(result, "iframe", ret="src")[0]
+
+                    if 'docs.google.com' in url:
+                        import commonresolvers
+                        url = commonresolvers.resolvers().googledocs(url)
+                        if url == None: raise Exception()
+                    elif 'googlevideo.com' in url:
                         url = getUrl(url, output='geturl').result
-                    elif '0000000008100000' in i:
-                        url = common.parseDOM(url, "iframe", ret="src")[0]
-                        url = getUrl(url).result
-                        url = re.findall('("fmt_stream_map":".+?")', url, re.I)[0]
-                        url = json.loads('{' + url + '}')['fmt_stream_map']
-                        url = [i.split('|')[-1] for i in url.split(',')]
-                        url = url[0]
 
                     movietube_sources.append({'source': 'Movietube', 'quality': 'HD', 'provider': 'Movietube', 'url': url})
                     return
@@ -2818,8 +2858,8 @@ class moviestorm:
 
     def resolve(self, url):
         try:
-            result = getUrl(url).result
-            url = re.compile('path:"(.+?)"').findall(result)[0]
+            import commonresolvers
+            url = commonresolvers.resolvers().get(url)
             return url
         except:
             return

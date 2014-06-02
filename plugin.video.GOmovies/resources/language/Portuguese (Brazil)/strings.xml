@@ -36,6 +36,8 @@
 	<string id="30080">Biblioteca</string>
 	<string id="30081">Não se esqueça de adicionar esta pasta às fontes multimedia.</string>
 	<string id="30082">Pasta de filmes</string>
+	<string id="30083">Importação Automática de coleção Trakt</string>
+	<string id="30084">Intervalo de actualização</string>
 	<string id="30100">Contas</string>
 	<string id="30101">Utilizadores</string>
 	<string id="30102">Palavra-Passe</string>
@@ -80,15 +82,12 @@
 	<string id="30344">Deseja fazer a Transferência novamente?</string>
 	<string id="30345">O vídeo está a transferir.</string>
 	<string id="30346">Deseja cancelar?</string>
-	<string id="30347">Esta série parece já ter terminado.</string>
-	<string id="30348">Tem a certeza que a quer adicionar?</string>
-	<string id="30349">Esta série parece já ter terminado.</string>
-	<string id="30350">Deseja removê-la?</string>
-	<string id="30351">Esta série irá manter-se na sua biblioteca.</string>
-	<string id="30352">Deseja removê-la da biblioteca?</string>
-	<string id="30353">Resumir desde</string>
-	<string id="30354">Resumir</string>
-	<string id="30355">Retomar desde o início</string>
+	<string id="30347">Filme já na biblioteca.</string>
+	<string id="30348">Série já na biblioteca.</string>
+	<string id="30349">Tem a certeza que a quer adicionar?</string>
+	<string id="30350">Resumir desde</string>
+	<string id="30351">Resumir</string>
+	<string id="30352">Retomar desde o início</string>
 	<!-- Misc -->
 	<string id="30361">Próxima página</string>
 	<string id="30362">Pesquisar</string>
@@ -120,7 +119,7 @@
 	<string id="30423">Adicionar subscrição</string>
 	<string id="30424">Cancelar subscrição</string>
 	<string id="30425">Actualizar subscrição</string>
-	<string id="30426">Limpar subscrições</string>
+	<string id="30426">Atualizar coleção</string>
 	<string id="30427">Definir vista global</string>
 	<string id="30428">Definir vista de filmes</string>
 	<string id="30429">Definir vista de séries</string>

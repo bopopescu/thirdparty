@@ -239,11 +239,7 @@ class player(xbmc.Player):
     def run(self, name, url, imdb='0'):
         self.video_info(name, imdb)
 
-        if self.PseudoTVRunning == 'True':
-            item = xbmcgui.ListItem(path=url)
-            xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
-            return
-        elif self.folderPath.startswith(sys.argv[0]):
+        if self.folderPath.startswith(sys.argv[0]) or self.PseudoTVRunning == 'True':
             item = xbmcgui.ListItem(path=url)
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
         else:
@@ -483,16 +479,16 @@ class index:
 
     def settings_reset(self):
         try:
-            if getSetting("settings_version") == '2.0.0': return
+            if getSetting("settings_version") == '2.4.0': return
             settings = os.path.join(addonPath,'resources/settings.xml')
             file = xbmcvfs.File(settings)
             read = file.read()
             file.close()
-            for i in range (1,4): setSetting('hosthd' + str(i), common.parseDOM(read, "setting", ret="default", attrs = {"id": 'hosthd' + str(i)})[0])
-            for i in range (1,11): setSetting('host' + str(i), common.parseDOM(read, "setting", ret="default", attrs = {"id": 'host' + str(i)})[0])
+            for i in range (1,7): setSetting('hosthd' + str(i), common.parseDOM(read, "setting", ret="default", attrs = {"id": 'hosthd' + str(i)})[0])
+            for i in range (1,16): setSetting('host' + str(i), common.parseDOM(read, "setting", ret="default", attrs = {"id": 'host' + str(i)})[0])
             setSetting('autoplay_library', common.parseDOM(read, "setting", ret="default", attrs = {"id": 'autoplay_library'})[0])
             setSetting('autoplay', common.parseDOM(read, "setting", ret="default", attrs = {"id": 'autoplay'})[0])
-            setSetting('settings_version', '2.0.0')
+            setSetting('settings_version', '2.4.0')
         except:
             return
 
@@ -2506,6 +2502,11 @@ class resolver:
         if getSetting("putlockertv") == 'true':
             threads.append(Thread(putlockertv().get, name, title, imdb, tvdb, year, season, episode, show, show_alt, hostDict))
 
+        global clickplay_sources
+        clickplay_sources = []
+        if getSetting("clickplay") == 'true':
+            threads.append(Thread(clickplay().get, name, title, imdb, tvdb, year, season, episode, show, show_alt, hostDict))
+
         global vkbox_sources
         vkbox_sources = []
         if getSetting("vkbox") == 'true':
@@ -2534,7 +2535,7 @@ class resolver:
         [i.start() for i in threads]
         [i.join() for i in threads]
 
-        self.sources = icefilms_sources + watchseries_sources + primewire_sources + tvonline_sources + ororotv_sources + putlockertv_sources + vkbox_sources + istreamhd_sources + simplymovies_sources + moviestorm_sources + noobroom_sources
+        self.sources = icefilms_sources + primewire_sources + watchseries_sources + tvonline_sources + ororotv_sources + putlockertv_sources + vkbox_sources + clickplay_sources + istreamhd_sources + simplymovies_sources + moviestorm_sources + noobroom_sources
 
         return self.sources
 
@@ -2546,6 +2547,7 @@ class resolver:
             elif provider == 'TVonline': url = tvonline().resolve(url)
             elif provider == 'OroroTV': url = ororotv().resolve(url)
             elif provider == 'PutlockerTV': url = putlockertv().resolve(url)
+            elif provider == 'Clickplay': url = clickplay().resolve(url)
             elif provider == 'VKBox': url = vkbox().resolve(url)
             elif provider == 'iStreamHD': url = istreamhd().resolve(url)
             elif provider == 'Simplymovies': url = simplymovies().resolve(url)
@@ -2556,9 +2558,9 @@ class resolver:
             return
 
     def sources_filter(self):
-        #hd_rank = ['VK', 'Movreel', 'Billionuploads', '180upload', 'Hugefiles', 'Noobroom']
+        #hd_rank = ['VK', 'Firedrive', 'Movreel', 'Billionuploads', '180upload', 'Hugefiles', 'Noobroom']
         #sd_rank = ['TVonline', 'OroroTV', 'VK', 'Firedrive', 'Putlocker', 'Sockshare', 'Mailru', 'iShared', 'Movreel', 'Played', 'Promptfile', 'Mightyupload', 'Gorillavid', 'Divxstage', 'Noobroom']
-        hd_rank = [getSetting("hosthd1"), getSetting("hosthd2"), getSetting("hosthd3"), getSetting("hosthd4"), getSetting("hosthd5"), getSetting("hosthd6")]
+        hd_rank = [getSetting("hosthd1"), getSetting("hosthd2"), getSetting("hosthd3"), getSetting("hosthd4"), getSetting("hosthd5"), getSetting("hosthd6"), getSetting("hosthd7")]
         sd_rank = [getSetting("host1"), getSetting("host2"), getSetting("host3"), getSetting("host4"), getSetting("host5"), getSetting("host6"), getSetting("host7"), getSetting("host8"), getSetting("host9"), getSetting("host10"), getSetting("host11"), getSetting("host12"), getSetting("host13"), getSetting("host14"), getSetting("host15")]
 
         for i in range(len(self.sources)): self.sources[i]['source'] = self.sources[i]['source'].lower()
@@ -3143,7 +3145,6 @@ class putlockertv:
             result = getUrl(url).result
             url = common.parseDOM(result, "iframe", ret="src")[0]
             url = url.replace('putlocker', 'firedrive')
-            if 'firedrive' in url: url = url.replace('/embed/', '/file/')
             url = common.replaceHTMLCodes(url)
             url = url.encode('utf-8')
 
@@ -3161,38 +3162,67 @@ class putlockertv:
 
     def resolve(self, url):
         try:
-            result = getUrl(url).result
-            url = re.compile('videoSrc = "(.+?)"').findall(result)[0]
-            url = getUrl(url, output='geturl').result
+            import commonresolvers
+            url = commonresolvers.resolvers().get(url)
             return url
         except:
-            pass
+            return
 
+class clickplay:
+    def __init__(self):
+        self.base_link = 'http://clickplay.to'
+        self.search_link = 'http://clickplay.to/search/%s'
+
+    def get(self, name, title, imdb, tvdb, year, season, episode, show, show_alt, hostDict):
         try:
+            global clickplay_sources
+            clickplay_sources = []
+
+            query = self.search_link % urllib.quote_plus(' '.join([i for i in show.split() if i not in ['The','the','A','a']]))
+            result = getUrl(query).result
+            result = common.parseDOM(result, "div", attrs = { "id": "video_list" })[0]
+            result = result.split('</a>')
+
+            match = [i for i in result if any(x in self.cleantitle(i) for x in [str('>' + self.cleantitle(show) + '(%s)' % str(year) + '<'), str('>' + self.cleantitle(show) + '(%s)' % str(int(year)+1) + '<'), str('>' + self.cleantitle(show) + '(%s)' % str(int(year)-1) + '<'), str('>' + self.cleantitle(show_alt) + '(%s)' % str(year) + '<'), str('>' + self.cleantitle(show_alt) + '(%s)' % str(int(year)+1) + '<'), str('>' + self.cleantitle(show_alt) + '(%s)' % str(int(year)-1) + '<')])][0]
+            url = common.parseDOM(match, "a", ret="href")[0]
+            url = '%sseason-%01d/episode-%01d' % (url, int(season), int(episode))
+            url = common.replaceHTMLCodes(url)
+            url = url.encode('utf-8')
+
+            import decrypter
             result = getUrl(url).result
-            data = {}
-            r = re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)"/>', result)
-            for name, value in r: data[name] = value
-            post = urllib.urlencode(data)
+            links = re.compile('<a href="([?]link_id=.+?)".+?rel="noindex, nofollow".+?\[720p\].+?</a>').findall(result)
+            u = re.compile('content="(%s.+?)"' % url).findall(result)[0]
 
-            result = getUrl(url, post=post).result
+            for i in links[:5]:
+                try:
+                    result = getUrl(u + i).result
+                    url = re.compile('proxy[.]link=clickplay[*](.+?)"').findall(result)[-1]
+                    url = decrypter.decrypter(198,128).decrypt(url,base64.urlsafe_b64decode('bW5pcUpUcUJVOFozS1FVZWpTb00='),'ECB').split('\0')[0]
+                    if 'vk.com' in url:
+                        import commonresolvers
+                        vk = commonresolvers.resolvers().vk(url)
+                        for i in vk: clickplay_sources.append({'source': 'VK', 'quality': i['quality'], 'provider': 'Clickplay', 'url': i['url']})
+                    elif 'firedrive' in url:
+                        clickplay_sources.append({'source': 'Firedrive', 'quality': 'HD', 'provider': 'Clickplay', 'url': url})
+                    elif 'mail.ru' in url:
+                        clickplay_sources.append({'source': 'Mailru', 'quality': 'SD', 'provider': 'Clickplay', 'url': url})
+                except:
+                    pass
+        except:
+            return
 
-            url = None
-            try: url = re.compile("file:.+?'(.+?)'").findall(result)[0]
-            except: pass
-            try: url = re.compile('.*href="(.+?)".+?id=\'external_download\'').findall(result)[0]
-            except: pass
-            try: url = re.compile('.*href="(.+?)".+?id=\'top_external_download\'').findall(result)[0]
-            except: pass
-            try: url = re.compile("id='fd_vid_btm_download_front'.+?href='(.+?)'").findall(result)[0]
-            except: pass
+    def cleantitle(self, title):
+        title = re.sub('\n|\s(|[(])(UK|US|AU)(|[)])$|\s(vs|v[.])\s|(:|;|-|"|,|\'|\.|\?)|\s', '', title).lower()
+        return title
 
-            url = urllib.unquote_plus(url)
-            url = getUrl(url, output='geturl').result
-
+    def resolve(self, url):
+        try:
+            import commonresolvers
+            url = commonresolvers.resolvers().get(url)
             return url
         except:
-            pass
+            return
 
 class vkbox:
     def __init__(self):
@@ -3230,22 +3260,9 @@ class vkbox:
             num = int(match) + int(season) + int(episode)
             url = 'https://vk.com/video_ext.php?oid=%s&id=%s&hash=%s' % (str(int(param[0][0]) + num), str(int(param[0][1]) + num), param[0][2])
 
-            result = getUrl(url).result
-            try:
-                url = re.compile('url720=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                vkbox_sources.append({'source': 'VK', 'quality': 'HD', 'provider': 'VKBox', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url540=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                vkbox_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'VKBox', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url480=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                vkbox_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'VKBox', 'url': url})
-            except:
-                pass
+            import commonresolvers
+            url = commonresolvers.resolvers().vk(url)
+            for i in url: vkbox_sources.append({'source': 'VK', 'quality': i['quality'], 'provider': 'VKBox', 'url': i['url']})
         except:
             return
 
@@ -3309,22 +3326,9 @@ class istreamhd:
             url = common.replaceHTMLCodes(url)
             url = url.encode('utf-8')
 
-            result = getUrl(url).result
-            try:
-                url = re.compile('url720=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                istreamhd_sources.append({'source': 'VK', 'quality': 'HD', 'provider': 'iStreamHD', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url540=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                istreamhd_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'iStreamHD', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url480=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                istreamhd_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'iStreamHD', 'url': url})
-            except:
-                pass
+            import commonresolvers
+            url = commonresolvers.resolvers().vk(url)
+            for i in url: istreamhd_sources.append({'source': 'VK', 'quality': i['quality'], 'provider': 'iStreamHD', 'url': i['url']})
         except:
             return
 
@@ -3369,22 +3373,9 @@ class simplymovies:
             url = url.replace('http://', 'https://')
             url = url.encode('utf-8')
 
-            result = getUrl(url).result
-            try:
-                url = re.compile('url720=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                simplymovies_sources.append({'source': 'VK', 'quality': 'HD', 'provider': 'Simplymovies', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url540=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                simplymovies_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'Simplymovies', 'url': url})
-            except:
-                pass
-            try:
-                url = re.compile('url480=(.+?)&').findall(result)[0].replace('https://', 'http://')
-                simplymovies_sources.append({'source': 'VK', 'quality': 'SD', 'provider': 'Simplymovies', 'url': url})
-            except:
-                pass
+            import commonresolvers
+            url = commonresolvers.resolvers().vk(url)
+            for i in url: simplymovies_sources.append({'source': 'VK', 'quality': i['quality'], 'provider': 'Simplymovies', 'url': i['url']})
         except:
             return
 

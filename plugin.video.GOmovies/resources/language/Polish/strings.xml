@@ -36,6 +36,8 @@
 	<string id="30080">Biblioteka</string>
 	<string id="30081">Dodaj ten folder do źródeł biblioteki XBMC.</string>
 	<string id="30082">Folder Filmów</string>
+	<string id="30083">Automatyczny Import kolekcji Trakt</string>
+	<string id="30084">Częstotliwość Aktualizacji</string>
 	<string id="30100">Logowanie</string>
 	<string id="30101">Login</string>
 	<string id="30102">Hasło</string>
@@ -80,15 +82,12 @@
 	<string id="30344">Chcesz je pobrać ponownie?</string>
 	<string id="30345">To wideo już jest pobierane.</string>
 	<string id="30346">Chcesz je przerwać?</string>
-	<string id="30347">Zdaje się, że serial jest zakończony.</string>
-	<string id="30348">Na pewno chcesz go dodać?</string>
-	<string id="30349">Zdaje się, że serial jest zakończony.</string>
-	<string id="30350">Na pewno chcesz go usunąć?</string>
-	<string id="30351">Ten serial pozostanie w Bibliotece.</string>
-	<string id="30352">Chcesz go usunąć z Biblioteki?</string>
-	<string id="30353">Wznów od</string>
-	<string id="30354">Wznów</string>
-	<string id="30355">Zacznij od poczatku</string>
+	<string id="30347">Film już w Bibliotece.</string>
+	<string id="30348">Serial już w Bibliotece.</string>
+	<string id="30349">Na pewno chcesz go dodać?</string>
+	<string id="30350">Wznów od</string>
+	<string id="30351">Wznów</string>
+	<string id="30352">Zacznij od poczatku</string>
 	<!-- Misc -->
 	<string id="30361">Następna Strona</string>
 	<string id="30362">Szukaj</string>
@@ -120,7 +119,7 @@
 	<string id="30423">Subskrybuj</string>
 	<string id="30424">Cofnij Subskrybcję</string>
 	<string id="30425">Aktualizuj Subskrybcję</string>
-	<string id="30426">Wyczyść Subskrybcję</string>
+	<string id="30426">Aktualizuj Bibliotekę</string>
 	<string id="30427">Ustaw Ten Widok dla Wszystkich</string>
 	<string id="30428">Ustaw Ten Widok dla Filmów</string>
 	<string id="30429">Ustaw Ten Widok dla Seriali</string>

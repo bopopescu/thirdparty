@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.GOmovies" name="GOmovies" version="2.2.1" provider-name="lambda, kodaxx">
+<addon id="plugin.video.GOmovies" name="GOmovies" version="2.4.0" provider-name="lambda, kodaxx">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.metahandler" version="2.4.0"/>
@@ -13,6 +13,8 @@
 	<extension point="xbmc.python.pluginsource" library="default.py">
 		<provides>video</provides>
 	</extension>
+	<extension point="xbmc.service" library="service.py" start="startup">
+	</extension>
 	<extension point="xbmc.addon.metadata">
 		<summary lang="en">Watch movies from various sources</summary>
 		<description lang="en">Watch movies from various sources</description>
@@ -20,7 +22,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.GOtv" name="GOtv" version="2.3.0" provider-name="lambda, kodaxx">
+<addon id="plugin.video.GOtv" name="GOtv" version="2.4.0" provider-name="lambda, kodaxx">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.metahandler" version="2.4.0"/>
@@ -73,6 +75,19 @@
 	<extension point="xbmc.addon.metadata">
 		<summary lang="en">Watch NHL games whenever you want</summary>
 		<description lang="en">Watch NHL games whenever you want</description>
+		<platform>all</platform>
+	</extension>
+</addon>
+
+<addon id="repository.thirdparty" name="Third Party Add-ons" version="1.0.3" provider-name="Third Party Developers">
+	<extension point="xbmc.addon.repository" name="Third Party Add-ons">
+		<info compressed="false">http://github.com/thinkgen/thirdparty/raw/master/repo/addons.xml</info>
+		<checksum>http://github.com/thinkgen/thirdparty/raw/master/repo/addons.xml.md5</checksum>
+		<datadir zip="true">http://github.com/thinkgen/thirdparty/raw/master/repo/</datadir>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Install Addons from third party developers</summary>
+		<description>Download and install addons from third party developers not affiliated with ThinkGen or GenTV.</description>
 		<platform>all</platform>
 	</extension>
 </addon>

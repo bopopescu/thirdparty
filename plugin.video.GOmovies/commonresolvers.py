@@ -64,11 +64,115 @@ class getUrl(object):
 
 class resolvers:
     def get(self, url):
-        if 'movreel.com' in url: url = self.movreel(url)
+        if '/vk.com' in url: url = self.vk(url)
+        elif 'mail.ru' in url: url = self.mailru(url)
+        elif 'videomega.tv' in url: url = self.videomega(url)
+        elif 'docs.google.com' in url: url = self.googledocs(url)
+        elif 'ishared.eu' in url: url = self.ishared(url)
+        elif 'firedrive.com' in url: url = self.firedrive(url)
+        elif 'movreel.com' in url: url = self.movreel(url)
         elif 'billionuploads.com' in url: url = self.billionuploads(url)
         elif '180upload.com' in url: url = self._180upload(url)
         elif 'hugefiles.net' in url: url = self.hugefiles(url)
         return url
+
+    def vk(self, url):
+        try:
+            links = []
+            url = url.replace('http://', 'https://')
+            result = getUrl(url).result
+            try:
+                url = re.compile('url720=(.+?)&').findall(result)[0].replace('https://', 'http://')
+                links.append({'quality': 'HD', 'url': url})
+            except:
+                pass
+            try:
+                url = re.compile('url540=(.+?)&').findall(result)[0].replace('https://', 'http://')
+                links.append({'quality': 'SD', 'url': url})
+            except:
+                pass
+            try:
+                url = re.compile('url480=(.+?)&').findall(result)[0].replace('https://', 'http://')
+                links.append({'quality': 'SD', 'url': url})
+            except:
+                pass
+
+            return links
+        except:
+            return
+
+    def mailru(self, url):
+        try:
+            url = url.replace('/my.mail.ru/video/', '/api.video.mail.ru/videos/embed/')
+            result = getUrl(url).result
+            url = re.compile('videoSrc = "(.+?)"').findall(result)[0]
+            url = getUrl(url, output='geturl').result
+            return url
+        except:
+            return
+
+    def videomega(self, url):
+        try:
+            url = url.replace('/?ref=', '/iframe.php?ref=')
+            result = getUrl(url).result
+            url = re.compile('document.write.unescape."(.+?)"').findall(result)[0]
+            url = urllib.unquote_plus(url)
+            url = re.compile('file: "(.+?)"').findall(url)[0]
+            return url
+        except:
+            return
+
+    def googledocs(self, url):
+        try:
+            try:    import json
+            except: import simplejson as json
+            url = getUrl(url).result
+            url = re.findall('("fmt_stream_map":".+?")', url, re.I)[0]
+            url = json.loads('{' + url + '}')['fmt_stream_map']
+            url = [i.split('|')[-1] for i in url.split(',')]
+            if url == []: return
+            try: url = [i for i in url if not any(x in i for x in ['&itag=43&', '&itag=35&', '&itag=34&', '&itag=5&'])][0]
+            except: url = url[0]
+            return url
+        except:
+            return
+
+    def ishared(self, url):
+        try:
+            result = getUrl(url).result
+            url = re.compile('path:"(.+?)"').findall(result)[0]
+            return url
+        except:
+            return
+
+    def firedrive(self, url):
+        try:
+            url = url.replace('/embed/', '/file/')
+
+            result = getUrl(url).result
+            data = {}
+            r = re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)"/>', result)
+            for name, value in r: data[name] = value
+            post = urllib.urlencode(data)
+
+            result = getUrl(url, post=post).result
+
+            url = None
+            try: url = re.compile("file:.+?'(.+?)'").findall(result)[0]
+            except: pass
+            try: url = re.compile('.*href="(.+?)".+?id=\'external_download\'').findall(result)[0]
+            except: pass
+            try: url = re.compile('.*href="(.+?)".+?id=\'top_external_download\'').findall(result)[0]
+            except: pass
+            try: url = re.compile("id='fd_vid_btm_download_front'.+?href='(.+?)'").findall(result)[0]
+            except: pass
+
+            url = urllib.unquote_plus(url)
+            url = getUrl(url, output='geturl').result
+
+            return url
+        except:
+            return
 
     def movreel(self, url):
         try:
