@@ -114,8 +114,8 @@ class ClicktoviewResolver(Plugin, UrlResolver, PluginSettings):
 
             else:
                     prea = re.compile('wmff\|(.+?)\|flvplayer').findall(html)
-                    for slave in prea:
-                        pre = 'http://'+slave+'.wmff.org:182/d/'
+                    for subordinate in prea:
+                        pre = 'http://'+subordinate+'.wmff.org:182/d/'
                     preb = re.compile('image\|(.+?)(?:\|)\|video\|(.+?)\|').findall(html)
                     for ext, link in preb:
                         r = pre+link+'/video.'+ext
